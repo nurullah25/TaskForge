@@ -1,19 +1,14 @@
 using System.Net;
-using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace TaskForge.Api.Tests;
 
-public class HealthCheckTests : IClassFixture<WebApplicationFactory<Program>>
+[Collection(ApiCollection.Name)]
+public class HealthCheckTests(TaskForgeApiFactory factory)
 {
-    private readonly HttpClient _client;
-
-    public HealthCheckTests(WebApplicationFactory<Program> factory)
-    {
-        _client = factory.CreateClient();
-    }
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
-    public async Task Health_endpoint_returns_ok()
+    public async Task Health_endpoint_reports_healthy_when_database_is_reachable()
     {
         var response = await _client.GetAsync("/api/health");
 
