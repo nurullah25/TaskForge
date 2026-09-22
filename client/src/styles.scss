@@ -1,1 +1,60 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+html {
+  color-scheme: light;
+
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$violet-palette,
+      ),
+      typography: Inter,
+      density: 0,
+    )
+  );
+
+  // Slightly squarer corners than the Material 3 defaults feel more like a business app.
+  @include mat.button-overrides(
+    (
+      filled-container-shape: 8px,
+      outlined-container-shape: 8px,
+      text-container-shape: 8px,
+      protected-container-shape: 8px,
+    )
+  );
+  @include mat.card-overrides(
+    (
+      elevated-container-shape: 12px,
+      outlined-container-shape: 12px,
+    )
+  );
+
+  --tf-page-background: #f5f6f8;
+  --tf-border: #e3e6ea;
+  --tf-muted: #5f6b7a;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--tf-page-background);
+  color: var(--mat-sys-on-surface);
+}
+
+a {
+  color: var(--mat-sys-primary);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.muted {
+  color: var(--tf-muted);
+}
