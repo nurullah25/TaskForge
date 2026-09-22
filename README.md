@@ -34,6 +34,16 @@ tests/TaskForge.Api.Tests/ xUnit tests
 client/                    Angular application
 ```
 
+## Authentication
+
+- `POST /api/auth/register` and `POST /api/auth/login` return a short-lived JWT access token (15 minutes) in the response body.
+- The refresh token is sent as an `HttpOnly`, `Secure`, `SameSite=Strict` cookie scoped to `/api/auth`, so scripts in the page can't read it.
+- `POST /api/auth/refresh` exchanges the cookie for a new access token and rotates the refresh token. Each refresh token works once and is stored only as a SHA-256 hash.
+- `POST /api/auth/logout` revokes the refresh token and clears the cookie.
+- Every other endpoint requires a valid access token unless it is explicitly marked anonymous.
+
+In Swagger, call `/api/auth/login`, copy `accessToken`, and paste it into the **Authorize** dialog.
+
 ## Getting started
 
 ### Prerequisites
@@ -59,6 +69,8 @@ In the Development environment the API applies EF Core migrations on startup and
 | daniel@example.com | Organization admin, project manager |
 | priya@example.com | Member, contributor |
 | tom@example.com | Member, viewer on Customer Portal |
+
+The JWT signing key for development is in `appsettings.Development.json`. In any other environment the API refuses to start until `Jwt:Key` is set, for example via the `Jwt__Key` environment variable or user secrets.
 
 To add a migration after changing the model:
 
