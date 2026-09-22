@@ -42,6 +42,8 @@ client/                    Angular application
 - `POST /api/auth/logout` revokes the refresh token and clears the cookie.
 - Every other endpoint requires a valid access token unless it is explicitly marked anonymous.
 
+On the client, the access token is kept in memory only. When the app starts it calls `/api/auth/refresh` to restore the session from the cookie, so a page reload doesn't sign the user out. An HTTP interceptor attaches the token to API calls and, when a call fails with 401, refreshes the token once and retries. Concurrent failures share a single refresh request.
+
 In Swagger, call `/api/auth/login`, copy `accessToken`, and paste it into the **Authorize** dialog.
 
 ## Getting started
