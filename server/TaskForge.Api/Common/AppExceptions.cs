@@ -5,6 +5,8 @@ namespace TaskForge.Api.Common;
 
 public class BadRequestException(string message) : Exception(message);
 
+public class UnauthorizedException(string message) : Exception(message);
+
 public class ForbiddenException(string message = "You don't have permission to do this.") : Exception(message);
 
 public class NotFoundException(string message) : Exception(message);

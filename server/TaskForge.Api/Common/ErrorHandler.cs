@@ -13,6 +13,7 @@ public class ErrorHandler(
         var (status, title) = exception switch
         {
             BadRequestException => (StatusCodes.Status400BadRequest, "Bad request"),
+            UnauthorizedException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             ForbiddenException => (StatusCodes.Status403Forbidden, "Forbidden"),
             NotFoundException => (StatusCodes.Status404NotFound, "Not found"),
             ConflictException or DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "Conflict"),
