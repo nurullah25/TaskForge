@@ -51,6 +51,22 @@ dotnet run
 
 The API listens on `http://localhost:5080`. Swagger UI is at `http://localhost:5080/swagger`.
 
+In the Development environment the API applies EF Core migrations on startup and seeds a demo workspace into the `TaskForge` database on LocalDB. The connection string is in `appsettings.json`. Demo accounts (password `Demo@1234`):
+
+| Email | Role |
+|---|---|
+| sarah@example.com | Organization owner |
+| daniel@example.com | Organization admin, project manager |
+| priya@example.com | Member, contributor |
+| tom@example.com | Member, viewer on Customer Portal |
+
+To add a migration after changing the model:
+
+```bash
+dotnet tool restore
+dotnet ef migrations add <Name> --project server/TaskForge.Api --output-dir Data/Migrations
+```
+
 ### Run the client
 
 ```bash
@@ -66,6 +82,8 @@ Open `http://localhost:4200`. Requests to `/api` and `/hubs` are proxied to the 
 ```bash
 dotnet test
 ```
+
+API tests run against a separate `TaskForge_Tests` database that is recreated on every run. Set the `TASKFORGE_TEST_DB` environment variable to use a different SQL Server connection string.
 
 ```bash
 cd client
