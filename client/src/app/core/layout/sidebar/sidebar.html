@@ -1,0 +1,22 @@
+<div class="brand">
+  <span class="logo" aria-hidden="true">
+    <mat-icon>view_kanban</mat-icon>
+  </span>
+  <span class="name">TaskForge</span>
+</div>
+
+<mat-nav-list class="nav">
+  @for (item of navItems; track item.route) {
+    <a
+      mat-list-item
+      [routerLink]="item.route"
+      routerLinkActive
+      #link="routerLinkActive"
+      [activated]="link.isActive"
+      (click)="linkClicked.emit()"
+    >
+      <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+      <span matListItemTitle>{{ item.label }}</span>
+    </a>
+  }
+</mat-nav-list>

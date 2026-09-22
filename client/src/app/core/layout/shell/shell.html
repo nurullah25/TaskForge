@@ -1,0 +1,17 @@
+<mat-sidenav-container class="shell">
+  <mat-sidenav
+    class="sidenav"
+    [mode]="isHandset() ? 'over' : 'side'"
+    [opened]="!isHandset()"
+    [fixedInViewport]="isHandset()"
+  >
+    <app-sidebar (linkClicked)="closeMenuOnHandset()" />
+  </mat-sidenav>
+
+  <mat-sidenav-content class="content">
+    <app-topbar [showMenuButton]="isHandset()" (menuClicked)="toggleMenu()" />
+    <main class="page">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

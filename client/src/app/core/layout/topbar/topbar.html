@@ -1,0 +1,29 @@
+<mat-toolbar class="topbar">
+  @if (showMenuButton()) {
+    <button mat-icon-button aria-label="Open menu" (click)="menuClicked.emit()">
+      <mat-icon>menu</mat-icon>
+    </button>
+  }
+
+  <span class="spacer"></span>
+
+  @if (user(); as user) {
+    <button class="user-button" [matMenuTriggerFor]="userMenu" aria-label="Account menu">
+      <app-user-avatar [name]="user.fullName" [size]="32" />
+      <span class="user-name">{{ user.fullName }}</span>
+      <mat-icon>expand_more</mat-icon>
+    </button>
+
+    <mat-menu #userMenu="matMenu" xPosition="before">
+      <div class="menu-header">
+        <strong>{{ user.fullName }}</strong>
+        <span class="muted">{{ user.email }}</span>
+      </div>
+      <mat-divider />
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Sign out</span>
+      </button>
+    </mat-menu>
+  }
+</mat-toolbar>

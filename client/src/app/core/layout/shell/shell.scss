@@ -1,0 +1,28 @@
+.shell {
+  height: 100vh;
+  background: var(--tf-page-background);
+}
+
+.sidenav {
+  width: 248px;
+  border-right: 1px solid var(--tf-border);
+  border-radius: 0;
+  background: var(--mat-sys-surface);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.page {
+  flex: 1;
+  padding: 24px 32px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 959px) {
+  .page {
+    padding: 16px;
+  }
+}
