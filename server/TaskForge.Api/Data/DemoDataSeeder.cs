@@ -12,7 +12,7 @@ public static class DemoDataSeeder
 
     public static async Task SeedAsync(AppDbContext db)
     {
-        if (await db.Users.AnyAsync())
+        if (await db.Users.AnyAsync(u => u.Email == "sarah@example.com"))
             return;
 
         var hasher = new PasswordHasher<User>();

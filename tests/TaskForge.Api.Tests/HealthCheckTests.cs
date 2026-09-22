@@ -5,7 +5,7 @@ namespace TaskForge.Api.Tests;
 [Collection(ApiCollection.Name)]
 public class HealthCheckTests(TaskForgeApiFactory factory)
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private readonly HttpClient _client = factory.CreateApiClient();
 
     [Fact]
     public async Task Health_endpoint_reports_healthy_when_database_is_reachable()

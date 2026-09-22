@@ -1,8 +1,11 @@
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TaskForge.Api.Data;
+using TaskForge.Api.Features.Auth;
 
 namespace TaskForge.Api.Tests;
 
@@ -11,6 +14,8 @@ namespace TaskForge.Api.Tests;
 // cascade rules and rowversion behave exactly like they do in the real app.
 public class TaskForgeApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    public const string TestPassword = "Password123!";
+
     private const string DefaultConnectionString =
         "Server=(localdb)\\MSSQLLocalDB;Database=TaskForge_Tests;Trusted_Connection=True;TrustServerCertificate=True";
 
@@ -22,6 +27,7 @@ public class TaskForgeApiFactory : WebApplicationFactory<Program>, IAsyncLifetim
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:Default", ConnectionString);
         builder.UseSetting("Database:MigrateOnStartup", "false");
+        builder.UseSetting("Jwt:Key", "integration-tests-signing-key-0123456789");
     }
 
     public async Task InitializeAsync()
@@ -34,6 +40,33 @@ public class TaskForgeApiFactory : WebApplicationFactory<Program>, IAsyncLifetim
     }
 
     Task IAsyncLifetime.DisposeAsync() => Task.CompletedTask;
+
+    // HTTPS base address because the refresh cookie is marked Secure. Cookies are handled
+    // manually in tests so each test can see exactly which cookie it sends.
+    public HttpClient CreateApiClient() => CreateClient(new WebApplicationFactoryClientOptions
+    {
+        BaseAddress = new Uri("https://localhost"),
+        HandleCookies = false
+    });
+
+    public static string UniqueEmail() => $"user-{Guid.NewGuid():N}@example.com";
+
+    // Registers a brand new user and returns a client that sends their access token.
+    public async Task<(HttpClient Client, UserDto User)> CreateSignedInClientAsync(string fullName = "Test User")
+    {
+        var client = CreateApiClient();
+        var response = await client.PostAsJsonAsync("/api/auth/register", new
+        {
+            Email = UniqueEmail(),
+            FullName = fullName,
+            Password = TestPassword
+        });
+        response.EnsureSuccessStatusCode();
+
+        var auth = (await response.Content.ReadFromJsonAsync<AuthResponse>())!;
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
+        return (client, auth.User);
+    }
 }
 
 [CollectionDefinition(Name)]

@@ -18,10 +18,14 @@ public class DataModelTests(TaskForgeApiFactory factory)
 
         await DemoDataSeeder.SeedAsync(db);
 
-        Assert.Equal(4, await db.Users.CountAsync());
-        Assert.Equal(2, await db.Projects.CountAsync());
+        var organization = await db.Organizations
+            .Include(o => o.Members)
+            .Include(o => o.Projects)
+            .SingleAsync(o => o.Name == "Brightline Software");
+        Assert.Equal(4, organization.Members.Count);
+        Assert.Equal(2, organization.Projects.Count);
 
-        var portal = await db.Projects.SingleAsync(p => p.Key == "CP");
+        var portal = organization.Projects.Single(p => p.Key == "CP");
         var numbers = await db.Tasks.Where(t => t.ProjectId == portal.Id).Select(t => t.Number).ToListAsync();
         Assert.Equal(Enumerable.Range(1, portal.TaskCounter), numbers.Order());
     }
