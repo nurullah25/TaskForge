@@ -20,7 +20,7 @@ public class BoardService(AppDbContext db, AccessService access)
 
     public async Task<BoardDto> GetAsync(int boardId)
     {
-        await RequireBoardAccessAsync(boardId);
+        var (_, myRole) = await RequireBoardAccessAsync(boardId);
 
         return await db.Boards
             .Where(b => b.Id == boardId)
@@ -30,6 +30,7 @@ public class BoardService(AppDbContext db, AccessService access)
                 b.Project.Key,
                 b.Project.Name,
                 b.Name,
+                myRole,
                 b.Columns
                     .OrderBy(c => c.Position)
                     .Select(c => new BoardColumnDto(c.Id, c.Name, c.Position, c.Category))
@@ -62,7 +63,7 @@ public class BoardService(AppDbContext db, AccessService access)
 
     public async Task DeleteAsync(int boardId)
     {
-        var projectId = await RequireBoardAccessAsync(boardId, ProjectRole.Manager);
+        var (projectId, _) = await RequireBoardAccessAsync(boardId, ProjectRole.Manager);
 
         if (await db.Boards.CountAsync(b => b.ProjectId == projectId) == 1)
             throw new ConflictException("A project needs at least one board.");
@@ -145,7 +146,7 @@ public class BoardService(AppDbContext db, AccessService access)
         await db.SaveChangesAsync();
     }
 
-    private async Task<int> RequireBoardAccessAsync(int boardId, ProjectRole minimum = ProjectRole.Viewer)
+    private async Task<(int ProjectId, ProjectRole Role)> RequireBoardAccessAsync(int boardId, ProjectRole minimum = ProjectRole.Viewer)
     {
         var projectId = await db.Boards
             .Where(b => b.Id == boardId)
@@ -153,8 +154,8 @@ public class BoardService(AppDbContext db, AccessService access)
             .SingleOrDefaultAsync()
             ?? throw new NotFoundException("Board not found.");
 
-        await access.RequireProjectRoleAsync(projectId, minimum);
-        return projectId;
+        var role = await access.RequireProjectRoleAsync(projectId, minimum);
+        return (projectId, role);
     }
 
     private async Task<BoardColumn> FindColumnAsync(int columnId, ProjectRole minimum)

@@ -5,7 +5,14 @@ namespace TaskForge.Api.Features.Boards;
 
 public record BoardColumnDto(int Id, string Name, int Position, ColumnCategory Category);
 
-public record BoardDto(int Id, int ProjectId, string ProjectKey, string ProjectName, string Name, List<BoardColumnDto> Columns);
+public record BoardDto(
+    int Id,
+    int ProjectId,
+    string ProjectKey,
+    string ProjectName,
+    string Name,
+    ProjectRole MyRole,
+    List<BoardColumnDto> Columns);
 
 public record BoardSummaryDto(int Id, string Name);
 
