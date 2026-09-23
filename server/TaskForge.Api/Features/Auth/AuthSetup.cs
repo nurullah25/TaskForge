@@ -34,6 +34,22 @@ public static class AuthSetup
                     NameClaimType = JwtRegisteredClaimNames.Name,
                     ClockSkew = TimeSpan.FromSeconds(30)
                 };
+
+                // Browsers can't set headers on a WebSocket, so SignalR sends the token
+                // in the query string instead.
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var token = context.Request.Query["access_token"];
+                        if (!string.IsNullOrEmpty(token) && context.Request.Path.StartsWithSegments("/hubs"))
+                        {
+                            context.Token = token;
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
         // Every endpoint requires a signed-in user unless it opts out with [AllowAnonymous].

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.SignalR;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -13,6 +14,8 @@ using TaskForge.Api.Features.Attachments;
 using TaskForge.Api.Features.Comments;
 using TaskForge.Api.Features.Labels;
 using TaskForge.Api.Features.Tasks;
+using TaskForge.Api.Features.Notifications;
+using TaskForge.Api.Realtime;
 using TaskForge.Api.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,7 +36,12 @@ builder.Services.AddScoped<LabelService>();
 builder.Services.AddScoped<CommentService>();
 builder.Services.AddScoped<ActivityService>();
 builder.Services.AddScoped<AttachmentService>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<BoardNotifier>();
 builder.Services.AddSingleton<IFileStorage, LocalFileStorage>();
+
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserIdProvider, SubjectUserIdProvider>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
@@ -67,6 +75,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/api/health").AllowAnonymous();
+app.MapHub<AppHub>("/hubs/app");
 
 await app.PrepareDatabaseAsync();
 
