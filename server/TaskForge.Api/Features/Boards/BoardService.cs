@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TaskForge.Api.Common;
 using TaskForge.Api.Data;
 using TaskForge.Api.Entities;
+using TaskForge.Api.Features.Tasks;
 
 namespace TaskForge.Api.Features.Boards;
 
@@ -33,7 +34,13 @@ public class BoardService(AppDbContext db, AccessService access)
                 myRole,
                 b.Columns
                     .OrderBy(c => c.Position)
-                    .Select(c => new BoardColumnDto(c.Id, c.Name, c.Position, c.Category))
+                    .Select(c => new BoardColumnDto(
+                        c.Id,
+                        c.Name,
+                        c.Position,
+                        c.Category,
+                        // AsQueryable lets the shared card projection be reused inside this subquery.
+                        c.Tasks.AsQueryable().OrderBy(t => t.Position).ThenBy(t => t.Id).Select(TaskService.Card).ToList()))
                     .ToList()))
             .SingleAsync();
     }
@@ -167,6 +174,8 @@ public class BoardService(AppDbContext db, AccessService access)
         return column;
     }
 
+    // A column returned on its own (added, renamed, reordered) comes without tasks;
+    // the client already knows which cards belong to it.
     private static BoardColumnDto ToDto(BoardColumn column) =>
-        new(column.Id, column.Name, column.Position, column.Category);
+        new(column.Id, column.Name, column.Position, column.Category, []);
 }

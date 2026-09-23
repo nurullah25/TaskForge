@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using TaskForge.Api.Entities;
+using TaskForge.Api.Features.Tasks;
 
 namespace TaskForge.Api.Features.Boards;
 
-public record BoardColumnDto(int Id, string Name, int Position, ColumnCategory Category);
+public record BoardColumnDto(int Id, string Name, int Position, ColumnCategory Category, List<TaskCardDto> Tasks);
 
 public record BoardDto(
     int Id,
