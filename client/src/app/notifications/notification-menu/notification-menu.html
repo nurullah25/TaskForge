@@ -1,0 +1,37 @@
+@let unread = notifications.unreadCount();
+
+<button
+  mat-icon-button
+  [matMenuTriggerFor]="menu"
+  [matBadge]="unread"
+  [matBadgeHidden]="unread === 0"
+  matBadgeColor="warn"
+  matBadgeSize="small"
+  [attr.aria-label]="unread ? unread + ' unread notifications' : 'Notifications'"
+>
+  <mat-icon>notifications</mat-icon>
+</button>
+
+<mat-menu #menu="matMenu" xPosition="before" class="notification-menu">
+  <div class="menu-header" (click)="$event.stopPropagation()">
+    <strong>Notifications</strong>
+    @if (unread) {
+      <button mat-button (click)="notifications.markAllRead()">Mark all read</button>
+    }
+  </div>
+  <mat-divider />
+
+  @for (notification of notifications.notifications(); track notification.id) {
+    <button
+      mat-menu-item
+      class="notification"
+      [class.unread]="!notification.isRead"
+      (click)="open(notification)"
+    >
+      <span class="message">{{ notification.message }}</span>
+      <span class="muted when">{{ notification.createdAt | relativeTime }}</span>
+    </button>
+  } @empty {
+    <p class="muted empty">You're all caught up.</p>
+  }
+</mat-menu>

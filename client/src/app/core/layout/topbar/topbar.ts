@@ -4,6 +4,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { NotificationMenu } from '../../../notifications/notification-menu/notification-menu';
 import { UserAvatar } from '../../../shared/components/user-avatar/user-avatar';
 import { AuthService } from '../../auth/auth.service';
 
@@ -16,6 +17,7 @@ import { AuthService } from '../../auth/auth.service';
     MatMenuModule,
     MatDividerModule,
     UserAvatar,
+    NotificationMenu,
   ],
   templateUrl: './topbar.html',
   styleUrl: './topbar.scss',

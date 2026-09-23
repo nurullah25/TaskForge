@@ -1,0 +1,35 @@
+.menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 8px 8px 16px;
+  font-size: 14px;
+}
+
+.notification {
+  height: auto;
+  padding: 10px 16px;
+  line-height: 1.35;
+
+  .message {
+    display: block;
+    max-width: 320px;
+    white-space: normal;
+    font-size: 14px;
+  }
+
+  .when {
+    font-size: 12px;
+  }
+
+  &.unread {
+    background: var(--mat-sys-secondary-container);
+  }
+}
+
+.empty {
+  margin: 0;
+  padding: 16px;
+  font-size: 14px;
+}
