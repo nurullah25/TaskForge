@@ -48,6 +48,16 @@ Cards are dragged within a column and between columns. Instead of an index, the 
 
 Editing a task sends back the row version it was loaded with. If someone else saved first, the API answers `409` and the panel offers to reload their version instead of silently overwriting it. Moving a card into a `Done` column marks the task completed; moving it out reopens it. Every change is written to the activity history.
 
+## Real-time updates
+
+A single SignalR hub at `/hubs/app` keeps open boards in sync. A browser joins the group of the board it is showing and leaves it on navigation, so events only reach people actually looking at that board. Membership is checked again when joining, because reading a group is reading other people's work.
+
+Events are sent from the services after the change is saved, and the browser that made the change is left out: it passes its connection id in an `X-Connection-Id` header and the server sends the event to the rest of the group. Notifications go to a user rather than a group, so they arrive wherever that person is in the app.
+
+Browsers can't set headers on a WebSocket, so the access token travels in the query string for hub requests only. After a dropped connection the client rejoins its board and reloads, because events that happened while it was offline are not replayed.
+
+Notifications are stored in the database and pushed live: being assigned a task, a comment on a task you reported or are assigned to, and being added to a project. Nobody is notified about their own actions.
+
 ## Collaboration
 
 Each task panel has tabs for details, comments, files and history.
