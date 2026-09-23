@@ -10,6 +10,9 @@ import { filter, switchMap } from 'rxjs';
 import { WorkspaceService } from '../../core/workspace/workspace.service';
 import { confirmAction } from '../../shared/components/confirm-dialog/confirm-dialog';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
+import { TaskCard } from '../../tasks/task.models';
+import { TaskCreateDialog } from '../../tasks/task-create-dialog/task-create-dialog';
+import { TaskDetailPanel } from '../../tasks/task-detail-panel/task-detail-panel';
 import { BoardColumn } from '../board.models';
 import { BoardService } from '../board.service';
 import { BoardStore } from '../board.store';
@@ -42,8 +45,44 @@ export class BoardPage {
 
   readonly boardId = input.required({ transform: numberAttribute });
 
+  // ?task=12 in the URL opens that task, so a card can be linked to directly.
+  readonly task = input<string>();
+
+  private openTaskId: number | null = null;
+
   constructor() {
     effect(() => this.store.load(this.boardId()));
+
+    effect(() => {
+      const taskId = Number(this.task());
+      if (taskId > 0 && taskId !== this.openTaskId && this.store.board()) {
+        this.openTaskPanel(taskId);
+      }
+    });
+  }
+
+  protected openTask(card: TaskCard): void {
+    this.router.navigate([], { queryParams: { task: card.id }, queryParamsHandling: 'merge' });
+  }
+
+  protected createTask(column: BoardColumn): void {
+    TaskCreateDialog.open(this.dialog, {
+      columnId: column.id,
+      columnName: column.name,
+      members: this.store.members(),
+    })
+      .pipe(filter(Boolean))
+      .subscribe((task) => this.store.addTask(task));
+  }
+
+  protected dropTask(event: CdkDragDrop<BoardColumn>): void {
+    const card = event.item.data as TaskCard;
+    const sameSpot =
+      event.previousContainer === event.container && event.previousIndex === event.currentIndex;
+
+    if (!sameSpot) {
+      this.store.moveTask(card.id, event.container.data.id, event.currentIndex);
+    }
   }
 
   protected addColumn(): void {
@@ -78,7 +117,11 @@ export class BoardPage {
   protected renameBoard(): void {
     const board = this.store.board()!;
 
-    RenameDialog.open(this.dialog, { title: 'Rename board', label: 'Board name', value: board.name })
+    RenameDialog.open(this.dialog, {
+      title: 'Rename board',
+      label: 'Board name',
+      value: board.name,
+    })
       .pipe(filter(Boolean))
       .subscribe((name) => this.store.renameBoard(name));
   }
@@ -86,12 +129,19 @@ export class BoardPage {
   protected createBoard(): void {
     const board = this.store.board()!;
 
-    RenameDialog.open(this.dialog, { title: 'New board', label: 'Board name', value: '', confirmLabel: 'Create board' })
+    RenameDialog.open(this.dialog, {
+      title: 'New board',
+      label: 'Board name',
+      value: '',
+      confirmLabel: 'Create board',
+    })
       .pipe(
         filter(Boolean),
         switchMap((name) => this.api.create(board.projectId, name)),
       )
-      .subscribe((created) => this.router.navigate(['/projects', created.projectId, 'boards', created.id]));
+      .subscribe((created) =>
+        this.router.navigate(['/projects', created.projectId, 'boards', created.id]),
+      );
   }
 
   protected deleteBoard(): void {
@@ -111,5 +161,22 @@ export class BoardPage {
         this.workspace.reloadProjects();
         this.router.navigate(['/projects', board.projectId]);
       });
+  }
+
+  private openTaskPanel(taskId: number): void {
+    this.openTaskId = taskId;
+
+    TaskDetailPanel.open(this.dialog, { taskId, members: this.store.members() }).subscribe(
+      (result) => {
+        this.openTaskId = null;
+        if (result && 'changed' in result) {
+          this.store.applyTaskChanges(result.changed);
+        } else if (result && 'deleted' in result) {
+          this.store.removeTask(result.deleted);
+        }
+
+        this.router.navigate([], { queryParams: { task: null }, queryParamsHandling: 'merge' });
+      },
+    );
   }
 }

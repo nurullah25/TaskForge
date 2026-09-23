@@ -1,4 +1,5 @@
 import { ProjectRole } from '../projects/project.models';
+import { TaskCard } from '../tasks/task.models';
 
 export type ColumnCategory = 'ToDo' | 'InProgress' | 'Done';
 
@@ -13,6 +14,7 @@ export interface BoardColumn {
   name: string;
   position: number;
   category: ColumnCategory;
+  tasks: TaskCard[];
 }
 
 export interface Board {

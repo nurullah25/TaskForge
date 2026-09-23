@@ -1,21 +1,30 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { catchError, EMPTY, forkJoin, of, switchMap, tap } from 'rxjs';
+import { catchError, EMPTY, forkJoin, of, switchMap } from 'rxjs';
+import { ignoreHandledError } from '../core/http/api-error';
+import { ProjectService } from '../projects/project.service';
+import { TaskCard, TaskDetails, TaskMember } from '../tasks/task.models';
+import { TaskService } from '../tasks/task.service';
 import { Board, BoardColumn, BoardSummary, SaveColumnRequest } from './board.models';
 import { BoardService } from './board.service';
 
-// State for one open board. Provided by BoardPage, so each visit starts clean.
-// Phase 6 adds tasks and drag-and-drop between columns on top of this.
+// State for one open board: its columns, the cards in them and the people who can be
+// assigned. Provided by BoardPage, so each visit starts clean.
 @Injectable()
 export class BoardStore {
   private readonly api = inject(BoardService);
+  private readonly tasks = inject(TaskService);
+  private readonly projects = inject(ProjectService);
 
   readonly board = signal<Board | null>(null);
   readonly columns = signal<BoardColumn[]>([]);
+  readonly members = signal<TaskMember[]>([]);
   readonly projectBoards = signal<BoardSummary[]>([]);
   readonly loading = signal(true);
   readonly notFound = signal(false);
 
   readonly canManage = computed(() => this.board()?.myRole === 'Manager');
+  readonly canEditTasks = computed(() => this.board()?.myRole !== 'Viewer');
+  readonly dropListIds = computed(() => this.columns().map((column) => columnDropId(column.id)));
 
   load(boardId: number): void {
     this.loading.set(true);
@@ -25,7 +34,11 @@ export class BoardStore {
       .get(boardId)
       .pipe(
         switchMap((board) =>
-          forkJoin({ board: of(board), boards: this.api.listForProject(board.projectId) }),
+          forkJoin({
+            board: of(board),
+            boards: this.api.listForProject(board.projectId),
+            members: this.projects.members(board.projectId),
+          }),
         ),
         catchError(() => {
           this.notFound.set(true);
@@ -33,10 +46,13 @@ export class BoardStore {
           return EMPTY;
         }),
       )
-      .subscribe(({ board, boards }) => {
+      .subscribe(({ board, boards, members }) => {
         this.board.set(board);
         this.columns.set(board.columns);
         this.projectBoards.set(boards);
+        this.members.set(
+          members.map((m) => ({ id: m.userId, fullName: m.fullName, email: m.email })),
+        );
         this.loading.set(false);
       });
   }
@@ -46,25 +62,31 @@ export class BoardStore {
 
     this.api
       .addColumn(board.id, request)
+      .pipe(ignoreHandledError())
       .subscribe((column) => this.columns.update((columns) => [...columns, column]));
   }
 
   updateColumn(columnId: number, request: SaveColumnRequest): void {
     this.api
       .updateColumn(columnId, request)
+      .pipe(ignoreHandledError())
+      // The response has no tasks in it, so the cards already on screen are kept.
       .subscribe((updated) =>
-        this.columns.update((columns) => columns.map((c) => (c.id === updated.id ? updated : c))),
+        this.columns.update((columns) =>
+          columns.map((c) => (c.id === updated.id ? { ...updated, tasks: c.tasks } : c)),
+        ),
       );
   }
 
   deleteColumn(columnId: number): void {
     this.api
       .deleteColumn(columnId)
+      .pipe(ignoreHandledError())
       .subscribe(() => this.columns.update((columns) => columns.filter((c) => c.id !== columnId)));
   }
 
   // Moves the column on screen first, then saves the new order. If the save fails,
-  // the board is reloaded so what the user sees matches the server again.
+  // the previous order is restored.
   moveColumn(fromIndex: number, toIndex: number): void {
     const board = this.board()!;
     const previous = this.columns();
@@ -82,19 +104,119 @@ export class BoardStore {
           this.columns.set(previous);
           return EMPTY;
         }),
-        tap((columns) => this.columns.set(columns)),
       )
-      .subscribe();
+      .subscribe((columns) =>
+        this.columns.set(
+          columns.map((column) => ({
+            ...column,
+            tasks: reordered.find((c) => c.id === column.id)?.tasks ?? [],
+          })),
+        ),
+      );
   }
 
   renameBoard(name: string): void {
     const board = this.board()!;
 
-    this.api.rename(board.id, name).subscribe((updated) => {
-      this.board.set(updated);
-      this.projectBoards.update((boards) =>
-        boards.map((b) => (b.id === updated.id ? { id: updated.id, name: updated.name } : b)),
-      );
-    });
+    this.api
+      .rename(board.id, name)
+      .pipe(ignoreHandledError())
+      .subscribe((updated) => {
+        this.board.set(updated);
+        this.projectBoards.update((boards) =>
+          boards.map((b) => (b.id === updated.id ? { id: updated.id, name: updated.name } : b)),
+        );
+      });
   }
+
+  addTask(task: TaskDetails): void {
+    this.columns.update((columns) =>
+      columns.map((column) =>
+        column.id === task.columnId
+          ? { ...column, tasks: [...column.tasks, toCard(task)] }
+          : column,
+      ),
+    );
+  }
+
+  applyTaskChanges(task: TaskDetails): void {
+    this.columns.update((columns) =>
+      columns.map((column) => ({
+        ...column,
+        tasks: column.tasks.map((card) =>
+          card.id === task.id ? toCard(task, card.commentCount) : card,
+        ),
+      })),
+    );
+  }
+
+  removeTask(taskId: number): void {
+    this.columns.update((columns) =>
+      columns.map((column) => ({ ...column, tasks: column.tasks.filter((t) => t.id !== taskId) })),
+    );
+  }
+
+  // Called after a card is dropped. The board is updated straight away and the server is
+  // told which cards the task ended up between, not which index it landed on.
+  moveTask(taskId: number, targetColumnId: number, targetIndex: number): void {
+    const previous = this.columns();
+    const card = previous.flatMap((c) => c.tasks).find((t) => t.id === taskId);
+    if (!card) {
+      return;
+    }
+
+    const moved = { ...card, columnId: targetColumnId };
+    const updated = previous.map((column) => {
+      const tasks = column.tasks.filter((t) => t.id !== taskId);
+      if (column.id === targetColumnId) {
+        tasks.splice(targetIndex, 0, moved);
+      }
+      return { ...column, tasks };
+    });
+    this.columns.set(updated);
+
+    const target = updated.find((c) => c.id === targetColumnId)!.tasks;
+    const above = target[targetIndex - 1] ?? null;
+    const below = target[targetIndex + 1] ?? null;
+
+    this.tasks
+      .move(taskId, {
+        columnId: targetColumnId,
+        aboveTaskId: above?.id ?? null,
+        belowTaskId: below?.id ?? null,
+      })
+      .pipe(
+        catchError(() => {
+          this.columns.set(previous);
+          return EMPTY;
+        }),
+      )
+      .subscribe((saved) =>
+        this.columns.update((columns) =>
+          columns.map((column) => ({
+            ...column,
+            tasks: column.tasks.map((t) => (t.id === saved.id ? saved : t)),
+          })),
+        ),
+      );
+  }
+}
+
+export function columnDropId(columnId: number): string {
+  return `column-${columnId}`;
+}
+
+function toCard(task: TaskDetails, commentCount = 0): TaskCard {
+  return {
+    id: task.id,
+    number: task.number,
+    title: task.title,
+    priority: task.priority,
+    dueDate: task.dueDate,
+    columnId: task.columnId,
+    position: task.position,
+    assignee: task.assignee,
+    hasDescription: !!task.description,
+    commentCount,
+  };
 }

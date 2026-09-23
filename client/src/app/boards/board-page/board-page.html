@@ -73,9 +73,15 @@
     @for (column of store.columns(); track column.id) {
       <app-board-column
         [column]="column"
+        [projectKey]="board.projectKey"
         [canManage]="store.canManage()"
+        [canEditTasks]="store.canEditTasks()"
+        [connectedTo]="store.dropListIds()"
         (edit)="editColumn($event)"
         (remove)="deleteColumn($event)"
+        (addTask)="createTask($event)"
+        (openTask)="openTask($event)"
+        (taskDropped)="dropTask($event)"
       />
     }
 

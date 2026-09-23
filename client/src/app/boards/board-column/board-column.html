@@ -2,14 +2,19 @@
 
 <section class="column" cdkDrag [cdkDragDisabled]="!canManage()" cdkDragLockAxis="x">
   <header class="column-header" [class.draggable]="canManage()" cdkDragHandle>
-    <span class="category-dot" [class]="'category-dot ' + col.category.toLowerCase()" aria-hidden="true"></span>
+    <span [class]="'category-dot ' + col.category.toLowerCase()" aria-hidden="true"></span>
     <h2 class="column-name">{{ col.name }}</h2>
-    @if (taskCount()) {
-      <span class="count">{{ taskCount() }}</span>
+    @if (col.tasks.length) {
+      <span class="count">{{ col.tasks.length }}</span>
     }
 
     @if (canManage()) {
-      <button mat-icon-button class="menu-button" [matMenuTriggerFor]="menu" [attr.aria-label]="'Column ' + col.name + ' options'">
+      <button
+        mat-icon-button
+        class="menu-button"
+        [matMenuTriggerFor]="menu"
+        [attr.aria-label]="'Column ' + col.name + ' options'"
+      >
         <mat-icon>more_horiz</mat-icon>
       </button>
       <mat-menu #menu="matMenu" xPosition="before">
@@ -25,7 +30,32 @@
     }
   </header>
 
-  <div class="column-body">
-    <p class="placeholder muted">No tasks yet</p>
+  <div
+    class="column-body"
+    cdkDropList
+    [id]="dropId()"
+    [cdkDropListData]="col"
+    [cdkDropListConnectedTo]="connectedTo()"
+    [cdkDropListDisabled]="!canEditTasks()"
+    (cdkDropListDropped)="taskDropped.emit($event)"
+  >
+    @for (task of col.tasks; track task.id) {
+      <app-task-card
+        cdkDrag
+        [cdkDragData]="task"
+        [task]="task"
+        [projectKey]="projectKey()"
+        (click)="openTask.emit(task)"
+      />
+    } @empty {
+      <p class="placeholder muted">Nothing here yet</p>
+    }
   </div>
+
+  @if (canEditTasks()) {
+    <button class="add-task" type="button" (click)="addTask.emit(col)">
+      <mat-icon>add</mat-icon>
+      Add task
+    </button>
+  }
 </section>

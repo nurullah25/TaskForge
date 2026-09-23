@@ -1,7 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -10,7 +15,14 @@ import { BoardColumn, COLUMN_CATEGORIES, ColumnCategory, SaveColumnRequest } fro
 
 @Component({
   selector: 'app-column-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule],
+  imports: [
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+  ],
   template: `
     <h2 mat-dialog-title>{{ column ? 'Edit column' : 'New column' }}</h2>
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
@@ -51,7 +63,10 @@ export class ColumnDialog {
     category: [this.column?.category ?? ('ToDo' as ColumnCategory)],
   });
 
-  static open(dialog: MatDialog, column: BoardColumn | null = null): Observable<SaveColumnRequest | undefined> {
+  static open(
+    dialog: MatDialog,
+    column: BoardColumn | null = null,
+  ): Observable<SaveColumnRequest | undefined> {
     return dialog.open(ColumnDialog, { width: '420px', data: column }).afterClosed();
   }
 
