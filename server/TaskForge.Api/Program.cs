@@ -5,6 +5,7 @@ using Serilog;
 using TaskForge.Api.Common;
 using TaskForge.Api.Data;
 using TaskForge.Api.Features.Auth;
+using TaskForge.Api.Features.Boards;
 using TaskForge.Api.Features.Organizations;
 using TaskForge.Api.Features.Projects;
 
@@ -20,6 +21,7 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddScoped<AccessService>();
 builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<ProjectService>();
+builder.Services.AddScoped<BoardService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
