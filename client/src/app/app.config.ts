@@ -12,12 +12,15 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { AuthService } from './core/auth/auth.service';
 import { errorInterceptor } from './core/http/error.interceptor';
+import { connectionIdInterceptor } from './core/realtime/connection-id.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
+    provideHttpClient(
+      withInterceptors([authInterceptor, connectionIdInterceptor, errorInterceptor]),
+    ),
     provideNativeDateAdapter(),
 
     // Guards need to know whether the user is signed in, so the app waits for
