@@ -17,12 +17,20 @@
       <h1>{{ project.name }}</h1>
     </div>
 
-    @if (project.myRole === 'Manager') {
-      <a mat-stroked-button [routerLink]="['/projects', project.id, 'settings']">
-        <mat-icon>settings</mat-icon>
-        Settings
-      </a>
-    }
+    <div class="header-actions">
+      @if (project.boards.length) {
+        <a mat-flat-button [routerLink]="['/projects', project.id, 'boards', project.boards[0].id]">
+          <mat-icon>view_kanban</mat-icon>
+          Open board
+        </a>
+      }
+      @if (project.myRole === 'Manager') {
+        <a mat-stroked-button [routerLink]="['/projects', project.id, 'settings']">
+          <mat-icon>settings</mat-icon>
+          Settings
+        </a>
+      }
+    </div>
   </header>
 
   <div class="layout">
@@ -46,8 +54,10 @@
       <ul class="boards">
         @for (board of project.boards; track board.id) {
           <li>
-            <mat-icon>view_kanban</mat-icon>
-            <span>{{ board.name }}</span>
+            <a [routerLink]="['/projects', project.id, 'boards', board.id]">
+              <mat-icon>view_kanban</mat-icon>
+              <span>{{ board.name }}</span>
+            </a>
           </li>
         } @empty {
           <li class="muted">No boards yet.</li>
