@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TaskForge.Api.Common;
 using TaskForge.Api.Data;
 using TaskForge.Api.Entities;
+using TaskForge.Api.Features.Labels;
 
 namespace TaskForge.Api.Features.Tasks;
 
@@ -175,6 +176,7 @@ public class TaskService(AppDbContext db, CurrentUser currentUser, AccessService
             t.ColumnId,
             t.Position,
             t.Assignee == null ? null : new MemberSummaryDto(t.Assignee.Id, t.Assignee.FullName, t.Assignee.Email),
+            t.Labels.OrderBy(tl => tl.Label.Name).Select(tl => new LabelDto(tl.Label.Id, tl.Label.Name, tl.Label.Color)).ToList(),
             t.Description != null && t.Description != "",
             t.Comments.Count);
 
@@ -204,6 +206,7 @@ public class TaskService(AppDbContext db, CurrentUser currentUser, AccessService
                 t.CreatedAt,
                 t.UpdatedAt,
                 t.CompletedAt,
+                t.Labels.OrderBy(tl => tl.Label.Name).Select(tl => new LabelDto(tl.Label.Id, tl.Label.Name, tl.Label.Color)).ToList(),
                 role,
                 Convert.ToBase64String(t.RowVersion)))
             .SingleAsync();

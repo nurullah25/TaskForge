@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using TaskForge.Api.Common;
 using TaskForge.Api.Entities;
+using TaskForge.Api.Features.Labels;
 
 namespace TaskForge.Api.Features.Tasks;
 
@@ -14,6 +15,7 @@ public record TaskCardDto(
     int ColumnId,
     double Position,
     MemberSummaryDto? Assignee,
+    List<LabelDto> Labels,
     bool HasDescription,
     int CommentCount);
 
@@ -35,6 +37,7 @@ public record TaskDetailsDto(
     DateTime CreatedAt,
     DateTime UpdatedAt,
     DateTime? CompletedAt,
+    List<LabelDto> Labels,
     ProjectRole MyRole,
     string RowVersion);
 
