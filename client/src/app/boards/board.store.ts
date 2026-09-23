@@ -29,6 +29,45 @@ export class BoardStore {
   readonly loading = signal(true);
   readonly notFound = signal(false);
 
+  // Quick filters only hide cards that are already loaded, so they need no requests.
+  readonly filterText = signal('');
+  readonly filterAssigneeId = signal<number | null>(null);
+  readonly filterLabelId = signal<number | null>(null);
+
+  readonly hasFilters = computed(
+    () => !!this.filterText() || this.filterAssigneeId() !== null || this.filterLabelId() !== null,
+  );
+
+  readonly visibleColumns = computed(() => {
+    if (!this.hasFilters()) {
+      return this.columns();
+    }
+
+    const text = this.filterText().trim().toLowerCase();
+    const assigneeId = this.filterAssigneeId();
+    const labelId = this.filterLabelId();
+
+    return this.columns().map((column) => ({
+      ...column,
+      tasks: column.tasks.filter(
+        (task) =>
+          (!text || task.title.toLowerCase().includes(text)) &&
+          (assigneeId === null || task.assignee?.id === assigneeId) &&
+          (labelId === null || task.labels.some((label) => label.id === labelId)),
+      ),
+    }));
+  });
+
+  readonly visibleTaskCount = computed(() =>
+    this.visibleColumns().reduce((sum, column) => sum + column.tasks.length, 0),
+  );
+
+  clearFilters(): void {
+    this.filterText.set('');
+    this.filterAssigneeId.set(null);
+    this.filterLabelId.set(null);
+  }
+
   readonly canManage = computed(() => this.board()?.myRole === 'Manager');
   readonly canEditTasks = computed(() => this.board()?.myRole !== 'Viewer');
   readonly dropListIds = computed(() => this.columns().map((column) => columnDropId(column.id)));

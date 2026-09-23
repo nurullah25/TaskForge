@@ -24,6 +24,10 @@
           Open board
         </a>
       }
+      <a mat-stroked-button [routerLink]="['/projects', project.id, 'tasks']">
+        <mat-icon>list</mat-icon>
+        All tasks
+      </a>
       @if (project.myRole === 'Manager') {
         <a mat-stroked-button [routerLink]="['/projects', project.id, 'settings']">
           <mat-icon>settings</mat-icon>

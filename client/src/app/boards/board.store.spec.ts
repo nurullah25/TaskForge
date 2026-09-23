@@ -1,7 +1,10 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { Subject } from 'rxjs';
+import { BoardEvent } from '../core/realtime/realtime.service';
 import { TaskCard } from '../tasks/task.models';
+import { RealtimeService } from '../core/realtime/realtime.service';
 import { Board, BoardColumn } from './board.models';
 import { BoardStore } from './board.store';
 
@@ -9,9 +12,24 @@ describe('BoardStore', () => {
   let store: BoardStore;
   let httpMock: HttpTestingController;
 
+  // Stands in for the hub so tests can push events the way the server would.
+  const boardEvents = new Subject<BoardEvent>();
+  const realtime = {
+    boardEvents$: boardEvents,
+    reconnected$: new Subject<void>(),
+    currentConnectionId: () => null,
+    joinBoard: async () => {},
+    leaveBoard: async () => {},
+  };
+
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [BoardStore, provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        BoardStore,
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: RealtimeService, useValue: realtime },
+      ],
     });
 
     store = TestBed.inject(BoardStore);
@@ -121,6 +139,14 @@ describe('BoardStore', () => {
 
     expect(titlesIn(1)).toEqual(['First', 'Second', 'Third']);
     expect(titlesIn(3)).toEqual([]);
+  });
+
+  it('applies a move made by someone else without leaving a copy behind', () => {
+    // The server sends the card as it now looks: same id, new column and position.
+    boardEvents.next({ type: 'TaskMoved', payload: card(11, 'Second', 2, 1000) });
+
+    expect(titlesIn(1)).toEqual(['First', 'Third']);
+    expect(titlesIn(2)).toEqual(['Second']);
   });
 
   it('moves a column on screen before the save completes', () => {

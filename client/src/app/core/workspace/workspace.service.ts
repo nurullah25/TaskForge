@@ -21,7 +21,9 @@ export class WorkspaceService {
   readonly organizationsLoaded = signal(false);
   private readonly selectedId = signal<number | null>(readSelectedId());
 
-  readonly currentOrganization = computed(() => {
+  // Typed explicitly: indexing an empty array gives undefined, which TypeScript
+  // would otherwise hide behind the Organization type.
+  readonly currentOrganization = computed<Organization | null>(() => {
     const organizations = this.organizations();
     return organizations.find((o) => o.id === this.selectedId()) ?? organizations[0] ?? null;
   });

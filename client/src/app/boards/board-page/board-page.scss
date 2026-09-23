@@ -74,3 +74,27 @@
     color: var(--mat-sys-primary);
   }
 }
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+
+  mat-form-field {
+    width: 150px;
+  }
+
+  .search {
+    width: 220px;
+  }
+
+  .match-count {
+    font-size: 13px;
+  }
+
+  .all-tasks {
+    margin-left: auto;
+  }
+}
