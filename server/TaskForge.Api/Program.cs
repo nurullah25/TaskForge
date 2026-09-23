@@ -8,7 +8,12 @@ using TaskForge.Api.Features.Auth;
 using TaskForge.Api.Features.Boards;
 using TaskForge.Api.Features.Organizations;
 using TaskForge.Api.Features.Projects;
+using TaskForge.Api.Features.Activity;
+using TaskForge.Api.Features.Attachments;
+using TaskForge.Api.Features.Comments;
+using TaskForge.Api.Features.Labels;
 using TaskForge.Api.Features.Tasks;
+using TaskForge.Api.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +29,11 @@ builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<BoardService>();
 builder.Services.AddScoped<TaskService>();
+builder.Services.AddScoped<LabelService>();
+builder.Services.AddScoped<CommentService>();
+builder.Services.AddScoped<ActivityService>();
+builder.Services.AddScoped<AttachmentService>();
+builder.Services.AddSingleton<IFileStorage, LocalFileStorage>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
