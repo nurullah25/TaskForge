@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.SignalR;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -40,7 +41,10 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<BoardNotifier>();
 builder.Services.AddSingleton<IFileStorage, LocalFileStorage>();
 
-builder.Services.AddSignalR();
+// SignalR has its own serializer settings, so the casing is set to match the REST API.
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options =>
+        options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
 builder.Services.AddSingleton<IUserIdProvider, SubjectUserIdProvider>();
 
 builder.Services.AddControllers()
