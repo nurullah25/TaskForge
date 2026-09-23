@@ -16,6 +16,7 @@ import { getErrorMessage } from '../../core/http/api-error';
 import { WorkspaceService } from '../../core/workspace/workspace.service';
 import { OrganizationMember } from '../../organizations/organization.models';
 import { OrganizationService } from '../../organizations/organization.service';
+import { LabelManager } from '../../labels/label-manager/label-manager';
 import { confirmAction } from '../../shared/components/confirm-dialog/confirm-dialog';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
 import { MemberList, MemberRow } from '../../shared/components/member-list/member-list';
@@ -44,6 +45,7 @@ import { ProjectService } from '../project.service';
     PageHeader,
     MemberList,
     EmptyState,
+    LabelManager,
   ],
   templateUrl: './project-settings-page.html',
 })

@@ -102,6 +102,14 @@
     />
   </mat-card>
 
+  <mat-card appearance="outlined" class="section">
+    <h2>Labels</h2>
+    <p class="section-description">
+      Labels are shared by every board in this project and show up on the cards.
+    </p>
+    <app-label-manager [projectId]="project.id" [canManage]="isManager()" />
+  </mat-card>
+
   @if (project.canDelete) {
     <mat-card appearance="outlined" class="section danger">
       <h2>Delete project</h2>

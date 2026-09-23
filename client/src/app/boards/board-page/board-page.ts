@@ -166,17 +166,19 @@ export class BoardPage {
   private openTaskPanel(taskId: number): void {
     this.openTaskId = taskId;
 
-    TaskDetailPanel.open(this.dialog, { taskId, members: this.store.members() }).subscribe(
-      (result) => {
-        this.openTaskId = null;
-        if (result && 'changed' in result) {
-          this.store.applyTaskChanges(result.changed);
-        } else if (result && 'deleted' in result) {
-          this.store.removeTask(result.deleted);
-        }
+    TaskDetailPanel.open(this.dialog, {
+      taskId,
+      members: this.store.members(),
+      labels: this.store.labels(),
+    }).subscribe((result) => {
+      this.openTaskId = null;
+      if (result && 'changed' in result) {
+        this.store.applyTaskChanges(result.changed, result.commentCount);
+      } else if (result && 'deleted' in result) {
+        this.store.removeTask(result.deleted);
+      }
 
-        this.router.navigate([], { queryParams: { task: null }, queryParamsHandling: 'merge' });
-      },
-    );
+      this.router.navigate([], { queryParams: { task: null }, queryParamsHandling: 'merge' });
+    });
   }
 }

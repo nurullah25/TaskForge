@@ -7,6 +7,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { catchError, EMPTY, switchMap, tap } from 'rxjs';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
+import { ActivityEntry, ActivityService } from '../../tasks/activity.service';
+import { ActivityList } from '../../tasks/activity-list/activity-list';
 import { ProjectDetails } from '../project.models';
 import { ProjectService } from '../project.service';
 import { ProjectStatusChip } from '../project-status-chip/project-status-chip';
@@ -21,16 +23,19 @@ import { ProjectStatusChip } from '../project-status-chip/project-status-chip';
     RouterLink,
     EmptyState,
     ProjectStatusChip,
+    ActivityList,
   ],
   templateUrl: './project-page.html',
   styleUrl: './project-page.scss',
 })
 export class ProjectPage {
   private readonly api = inject(ProjectService);
+  private readonly activityApi = inject(ActivityService);
 
   readonly projectId = input.required({ transform: numberAttribute });
 
   protected readonly project = signal<ProjectDetails | null>(null);
+  protected readonly recentActivity = signal<ActivityEntry[]>([]);
   protected readonly notFound = signal(false);
 
   constructor() {
@@ -48,5 +53,12 @@ export class ProjectPage {
         takeUntilDestroyed(),
       )
       .subscribe((project) => this.project.set(project));
+
+    toObservable(this.projectId)
+      .pipe(
+        switchMap((id) => this.activityApi.forProject(id, 1, 10).pipe(catchError(() => EMPTY))),
+        takeUntilDestroyed(),
+      )
+      .subscribe((result) => this.recentActivity.set(result.items));
   }
 }

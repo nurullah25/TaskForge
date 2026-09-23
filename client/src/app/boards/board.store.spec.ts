@@ -20,17 +20,16 @@ describe('BoardStore', () => {
     store.load(7);
     httpMock.expectOne('/api/boards/7').flush(board());
     httpMock.expectOne('/api/projects/3/boards').flush([{ id: 7, name: 'Development' }]);
-    httpMock
-      .expectOne('/api/projects/3/members')
-      .flush([
-        {
-          userId: 5,
-          fullName: 'Sarah Khan',
-          email: 'sarah@example.com',
-          role: 'Manager',
-          addedAt: '',
-        },
-      ]);
+    httpMock.expectOne('/api/projects/3/members').flush([
+      {
+        userId: 5,
+        fullName: 'Sarah Khan',
+        email: 'sarah@example.com',
+        role: 'Manager',
+        addedAt: '',
+      },
+    ]);
+    httpMock.expectOne('/api/projects/3/labels').flush([{ id: 4, name: 'bug', color: '#ef4444' }]);
   });
 
   afterEach(() => httpMock.verify());
@@ -45,6 +44,7 @@ describe('BoardStore', () => {
       columnId,
       position,
       assignee: null,
+      labels: [],
       hasDescription: false,
       commentCount: 0,
     };

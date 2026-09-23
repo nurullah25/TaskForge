@@ -1,6 +1,8 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { catchError, EMPTY, forkJoin, of, switchMap } from 'rxjs';
 import { ignoreHandledError } from '../core/http/api-error';
+import { Label } from '../labels/label.models';
+import { LabelService } from '../labels/label.service';
 import { ProjectService } from '../projects/project.service';
 import { TaskCard, TaskDetails, TaskMember } from '../tasks/task.models';
 import { TaskService } from '../tasks/task.service';
@@ -14,10 +16,12 @@ export class BoardStore {
   private readonly api = inject(BoardService);
   private readonly tasks = inject(TaskService);
   private readonly projects = inject(ProjectService);
+  private readonly labelApi = inject(LabelService);
 
   readonly board = signal<Board | null>(null);
   readonly columns = signal<BoardColumn[]>([]);
   readonly members = signal<TaskMember[]>([]);
+  readonly labels = signal<Label[]>([]);
   readonly projectBoards = signal<BoardSummary[]>([]);
   readonly loading = signal(true);
   readonly notFound = signal(false);
@@ -38,6 +42,7 @@ export class BoardStore {
             board: of(board),
             boards: this.api.listForProject(board.projectId),
             members: this.projects.members(board.projectId),
+            labels: this.labelApi.listForProject(board.projectId),
           }),
         ),
         catchError(() => {
@@ -46,13 +51,14 @@ export class BoardStore {
           return EMPTY;
         }),
       )
-      .subscribe(({ board, boards, members }) => {
+      .subscribe(({ board, boards, members, labels }) => {
         this.board.set(board);
         this.columns.set(board.columns);
         this.projectBoards.set(boards);
         this.members.set(
           members.map((m) => ({ id: m.userId, fullName: m.fullName, email: m.email })),
         );
+        this.labels.set(labels);
         this.loading.set(false);
       });
   }
@@ -139,12 +145,12 @@ export class BoardStore {
     );
   }
 
-  applyTaskChanges(task: TaskDetails): void {
+  applyTaskChanges(task: TaskDetails, commentCount?: number): void {
     this.columns.update((columns) =>
       columns.map((column) => ({
         ...column,
         tasks: column.tasks.map((card) =>
-          card.id === task.id ? toCard(task, card.commentCount) : card,
+          card.id === task.id ? toCard(task, commentCount ?? card.commentCount) : card,
         ),
       })),
     );
@@ -216,6 +222,7 @@ function toCard(task: TaskDetails, commentCount = 0): TaskCard {
     columnId: task.columnId,
     position: task.position,
     assignee: task.assignee,
+    labels: task.labels,
     hasDescription: !!task.description,
     commentCount,
   };
