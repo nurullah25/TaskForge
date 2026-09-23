@@ -2,10 +2,15 @@ using Microsoft.EntityFrameworkCore;
 using TaskForge.Api.Common;
 using TaskForge.Api.Data;
 using TaskForge.Api.Entities;
+using TaskForge.Api.Features.Notifications;
 
 namespace TaskForge.Api.Features.Projects;
 
-public class ProjectService(AppDbContext db, CurrentUser currentUser, AccessService access)
+public class ProjectService(
+    AppDbContext db,
+    CurrentUser currentUser,
+    AccessService access,
+    NotificationService notifications)
 {
     public async Task<List<ProjectDto>> GetForOrganizationAsync(int organizationId)
     {
@@ -143,6 +148,11 @@ public class ProjectService(AppDbContext db, CurrentUser currentUser, AccessServ
         var member = new ProjectMember { ProjectId = id, UserId = user.Id, Role = request.Role };
         db.ProjectMembers.Add(member);
         await db.SaveChangesAsync();
+
+        var project = await db.Projects.Where(p => p.Id == id).Select(p => p.Name).SingleAsync();
+        var addedBy = await db.Users.Where(u => u.Id == currentUser.Id).Select(u => u.FullName).SingleAsync();
+        await notifications.SendAsync(user.Id, NotificationType.AddedToProject,
+            $"{addedBy} added you to {project}");
 
         return new ProjectMemberDto(user.Id, user.FullName, user.Email, member.Role, member.AddedAt);
     }

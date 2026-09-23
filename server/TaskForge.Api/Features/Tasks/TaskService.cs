@@ -4,10 +4,17 @@ using TaskForge.Api.Common;
 using TaskForge.Api.Data;
 using TaskForge.Api.Entities;
 using TaskForge.Api.Features.Labels;
+using TaskForge.Api.Features.Notifications;
+using TaskForge.Api.Realtime;
 
 namespace TaskForge.Api.Features.Tasks;
 
-public class TaskService(AppDbContext db, CurrentUser currentUser, AccessService access)
+public class TaskService(
+    AppDbContext db,
+    CurrentUser currentUser,
+    AccessService access,
+    BoardNotifier notifier,
+    NotificationService notifications)
 {
     public async Task<TaskDetailsDto> GetAsync(int taskId)
     {
@@ -56,7 +63,16 @@ public class TaskService(AppDbContext db, CurrentUser currentUser, AccessService
 
         await SaveWithUniqueNumberRetryAsync(task, project);
 
-        return await ToDetailsAsync(await LoadAsync(task.Id), role);
+        var details = await ToDetailsAsync(await LoadAsync(task.Id), role);
+        await notifier.TaskCreated(details.BoardId, await ReadCardAsync(task.Id));
+
+        if (task.AssigneeId != null)
+        {
+            await notifications.SendAsync(task.AssigneeId.Value, NotificationType.TaskAssigned,
+                $"{await GetUserNameAsync(currentUser.Id)} assigned you {details.ProjectKey}-{task.Number}: {task.Title}", task.Id);
+        }
+
+        return details;
     }
 
     public async Task<TaskDetailsDto> UpdateAsync(int taskId, UpdateTaskRequest request)
@@ -70,6 +86,7 @@ public class TaskService(AppDbContext db, CurrentUser currentUser, AccessService
         if (!string.IsNullOrEmpty(request.RowVersion))
             db.Entry(task).Property(t => t.RowVersion).OriginalValue = Convert.FromBase64String(request.RowVersion);
 
+        var previousAssigneeId = task.AssigneeId;
         var title = request.Title.Trim();
         if (title != task.Title)
             Log(task, ActivityType.TitleChanged, task.Title, title);
@@ -94,9 +111,19 @@ public class TaskService(AppDbContext db, CurrentUser currentUser, AccessService
         task.DueDate = request.DueDate;
         task.UpdatedAt = DateTime.UtcNow;
 
+        var assigneeChanged = task.AssigneeId != null && task.AssigneeId != previousAssigneeId;
         await db.SaveChangesAsync();
 
-        return await ToDetailsAsync(task, role);
+        var details = await ToDetailsAsync(task, role);
+        await notifier.TaskUpdated(details.BoardId, await ReadCardAsync(task.Id));
+
+        if (assigneeChanged)
+        {
+            await notifications.SendAsync(task.AssigneeId!.Value, NotificationType.TaskAssigned,
+                $"{await GetUserNameAsync(currentUser.Id)} assigned you {details.ProjectKey}-{task.Number}: {task.Title}", task.Id);
+        }
+
+        return details;
     }
 
     public async Task<TaskCardDto> MoveAsync(int taskId, MoveTaskRequest request)
@@ -138,7 +165,10 @@ public class TaskService(AppDbContext db, CurrentUser currentUser, AccessService
         task.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
 
-        return await db.Tasks.Where(t => t.Id == task.Id).Select(Card).SingleAsync();
+        var card = await ReadCardAsync(task.Id);
+        await notifier.TaskMoved(targetColumn.BoardId, card);
+
+        return card;
     }
 
     public async Task DeleteAsync(int taskId)
@@ -161,8 +191,12 @@ public class TaskService(AppDbContext db, CurrentUser currentUser, AccessService
             NewValue = $"{projectKey}-{task.Number} {task.Title}"
         });
 
+        var boardId = await db.BoardColumns.Where(c => c.Id == task.ColumnId).Select(c => c.BoardId).SingleAsync();
+
         db.Tasks.Remove(task);
         await db.SaveChangesAsync();
+
+        await notifier.TaskDeleted(boardId, taskId);
     }
 
     // Used here and by BoardService, so a card looks the same everywhere.
@@ -179,6 +213,9 @@ public class TaskService(AppDbContext db, CurrentUser currentUser, AccessService
             t.Labels.OrderBy(tl => tl.Label.Name).Select(tl => new LabelDto(tl.Label.Id, tl.Label.Name, tl.Label.Color)).ToList(),
             t.Description != null && t.Description != "",
             t.Comments.Count);
+
+    private Task<TaskCardDto> ReadCardAsync(int taskId) =>
+        db.Tasks.Where(t => t.Id == taskId).Select(Card).SingleAsync();
 
     private async Task<TaskItem> LoadAsync(int taskId) =>
         await db.Tasks.SingleOrDefaultAsync(t => t.Id == taskId)

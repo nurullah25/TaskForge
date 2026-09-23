@@ -2,10 +2,15 @@ using Microsoft.EntityFrameworkCore;
 using TaskForge.Api.Common;
 using TaskForge.Api.Data;
 using TaskForge.Api.Entities;
+using TaskForge.Api.Features.Notifications;
 
 namespace TaskForge.Api.Features.Comments;
 
-public class CommentService(AppDbContext db, CurrentUser currentUser, AccessService access)
+public class CommentService(
+    AppDbContext db,
+    CurrentUser currentUser,
+    AccessService access,
+    NotificationService notifications)
 {
     public async Task<PagedResult<CommentDto>> GetForTaskAsync(int taskId, PageQuery page)
     {
@@ -57,7 +62,22 @@ public class CommentService(AppDbContext db, CurrentUser currentUser, AccessServ
 
         await db.SaveChangesAsync();
 
+        await NotifyFollowersAsync(task);
+
         return await ReadAsync(comment.Id);
+    }
+
+    // The assignee and the person who reported the task hear about new comments.
+    private async Task NotifyFollowersAsync(TaskItem task)
+    {
+        var project = await db.Projects.Where(p => p.Id == task.ProjectId).Select(p => p.Key).SingleAsync();
+        var author = await db.Users.Where(u => u.Id == currentUser.Id).Select(u => u.FullName).SingleAsync();
+        var message = $"{author} commented on {project}-{task.Number}: {task.Title}";
+
+        foreach (var userId in new[] { task.AssigneeId, task.ReporterId }.OfType<int>().Distinct())
+        {
+            await notifications.SendAsync(userId, NotificationType.CommentAdded, message, task.Id);
+        }
     }
 
     public async Task<CommentDto> UpdateAsync(int commentId, SaveCommentRequest request)

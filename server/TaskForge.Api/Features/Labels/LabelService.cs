@@ -2,10 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using TaskForge.Api.Common;
 using TaskForge.Api.Data;
 using TaskForge.Api.Entities;
+using TaskForge.Api.Features.Tasks;
+using TaskForge.Api.Realtime;
 
 namespace TaskForge.Api.Features.Labels;
 
-public class LabelService(AppDbContext db, AccessService access)
+public class LabelService(AppDbContext db, AccessService access, BoardNotifier notifier)
 {
     public async Task<List<LabelDto>> GetForProjectAsync(int projectId)
     {
@@ -82,6 +84,9 @@ public class LabelService(AppDbContext db, AccessService access)
 
         task.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
+
+        var boardId = await db.BoardColumns.Where(c => c.Id == task.ColumnId).Select(c => c.BoardId).SingleAsync();
+        await notifier.TaskUpdated(boardId, await db.Tasks.Where(t => t.Id == task.Id).Select(TaskService.Card).SingleAsync());
 
         return labels.OrderBy(l => l.Name).Select(l => new LabelDto(l.Id, l.Name, l.Color)).ToList();
     }

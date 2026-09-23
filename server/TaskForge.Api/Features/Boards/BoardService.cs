@@ -3,10 +3,11 @@ using TaskForge.Api.Common;
 using TaskForge.Api.Data;
 using TaskForge.Api.Entities;
 using TaskForge.Api.Features.Tasks;
+using TaskForge.Api.Realtime;
 
 namespace TaskForge.Api.Features.Boards;
 
-public class BoardService(AppDbContext db, AccessService access)
+public class BoardService(AppDbContext db, AccessService access, BoardNotifier notifier)
 {
     public async Task<List<BoardSummaryDto>> GetForProjectAsync(int projectId)
     {
@@ -99,6 +100,7 @@ public class BoardService(AppDbContext db, AccessService access)
 
         db.BoardColumns.Add(column);
         await db.SaveChangesAsync();
+        await notifier.ColumnsChanged(boardId);
 
         return ToDto(column);
     }
@@ -110,6 +112,7 @@ public class BoardService(AppDbContext db, AccessService access)
         column.Name = request.Name.Trim();
         column.Category = request.Category;
         await db.SaveChangesAsync();
+        await notifier.ColumnsChanged(column.BoardId);
 
         return ToDto(column);
     }
@@ -135,6 +138,7 @@ public class BoardService(AppDbContext db, AccessService access)
         }
 
         await db.SaveChangesAsync();
+        await notifier.ColumnsChanged(boardId);
 
         return columns.OrderBy(c => c.Position).Select(ToDto).ToList();
     }
@@ -151,6 +155,7 @@ public class BoardService(AppDbContext db, AccessService access)
 
         db.BoardColumns.Remove(column);
         await db.SaveChangesAsync();
+        await notifier.ColumnsChanged(column.BoardId);
     }
 
     private async Task<(int ProjectId, ProjectRole Role)> RequireBoardAccessAsync(int boardId, ProjectRole minimum = ProjectRole.Viewer)
