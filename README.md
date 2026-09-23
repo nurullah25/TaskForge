@@ -34,6 +34,24 @@ tests/TaskForge.Api.Tests/ xUnit tests
 client/                    Angular application
 ```
 
+## Roles and permissions
+
+Work is organized as organization → projects → boards → tasks. Access is checked on the server for every request, using roles stored in the database rather than in the token, so a role change takes effect immediately.
+
+| Organization role | Can |
+|---|---|
+| Owner | Everything, including deleting the organization and managing owners |
+| Admin | Manage members and projects; counts as manager of every project |
+| Member | See the organization and the projects they belong to |
+
+| Project role | Can |
+|---|---|
+| Manager | Project settings, members, boards and columns |
+| Contributor | Create, edit and move tasks; comment |
+| Viewer | Read and comment |
+
+People who aren't members get `404` instead of `403`, so they can't discover which organizations or projects exist.
+
 ## Authentication
 
 - `POST /api/auth/register` and `POST /api/auth/login` return a short-lived JWT access token (15 minutes) in the response body.
