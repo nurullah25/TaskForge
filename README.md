@@ -34,6 +34,12 @@ tests/TaskForge.Api.Tests/ xUnit tests
 client/                    Angular application
 ```
 
+## Boards
+
+Every project starts with a board containing four columns: To do, In progress, Testing and Done. Managers can rename, add, reorder (drag and drop) and delete columns, and a project can have several boards.
+
+Each column has a type (`ToDo`, `InProgress`, `Done`) separate from its name, so teams can rename columns freely while reports still know what counts as finished. Reordering sends the complete list of column ids rather than "moved column X to position 3", which keeps the result predictable when two people reorder at the same time. A column or board that still holds tasks can't be deleted, and a project always keeps at least one board.
+
 ## Roles and permissions
 
 Work is organized as organization → projects → boards → tasks. Access is checked on the server for every request, using roles stored in the database rather than in the token, so a role change takes effect immediately.
