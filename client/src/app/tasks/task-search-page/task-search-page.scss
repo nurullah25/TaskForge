@@ -1,0 +1,30 @@
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+
+  mat-form-field {
+    width: 160px;
+  }
+
+  .search {
+    width: 280px;
+  }
+}
+
+.count {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.results {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    margin-bottom: 8px;
+  }
+}

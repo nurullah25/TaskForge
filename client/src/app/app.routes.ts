@@ -44,6 +44,12 @@ export const routes: Routes = [
         loadComponent: () => import('./boards/board-page/board-page').then((m) => m.BoardPage),
       },
       {
+        path: 'projects/:projectId/tasks',
+        title: 'Tasks · TaskForge',
+        loadComponent: () =>
+          import('./tasks/task-search-page/task-search-page').then((m) => m.TaskSearchPage),
+      },
+      {
         path: 'projects/:projectId/settings',
         title: 'Project settings · TaskForge',
         loadComponent: () =>

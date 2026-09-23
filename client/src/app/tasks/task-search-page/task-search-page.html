@@ -1,0 +1,96 @@
+<app-page-header
+  title="Tasks"
+  [subtitle]="projectKey() ? projectKey() + ' · search and filter' : 'Search and filter'"
+/>
+
+<form class="filters" [formGroup]="form">
+  <mat-form-field appearance="outline" class="search">
+    <mat-label>Search</mat-label>
+    <input matInput formControlName="text" placeholder="Title or description" />
+    <mat-icon matIconSuffix>search</mat-icon>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Assignee</mat-label>
+    <mat-select formControlName="assigneeId">
+      <mat-option [value]="null">Anyone</mat-option>
+      @for (member of members(); track member.id) {
+        <mat-option [value]="member.id">{{ member.fullName }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Priority</mat-label>
+    <mat-select formControlName="priority">
+      <mat-option [value]="null">Any</mat-option>
+      @for (priority of priorities; track priority) {
+        <mat-option [value]="priority">{{ priority }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Status</mat-label>
+    <mat-select formControlName="category">
+      <mat-option [value]="null">Any</mat-option>
+      @for (category of categories; track category.value) {
+        <mat-option [value]="category.value">{{ category.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Label</mat-label>
+    <mat-select formControlName="labelId">
+      <mat-option [value]="null">Any</mat-option>
+      @for (label of labels(); track label.id) {
+        <mat-option [value]="label.id">{{ label.name }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Sort by</mat-label>
+    <mat-select formControlName="sort">
+      <mat-option value="Newest">Newest</mat-option>
+      <mat-option value="DueDate">Due date</mat-option>
+      <mat-option value="Priority">Priority</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  @if (activeFilterCount()) {
+    <button mat-button type="button" (click)="clearFilters()">
+      <mat-icon>filter_alt_off</mat-icon>
+      Clear
+    </button>
+  }
+</form>
+
+@if (results().length) {
+  <p class="count muted">{{ total() }} {{ total() === 1 ? 'task' : 'tasks' }}</p>
+
+  <ul class="results">
+    @for (task of results(); track task.id) {
+      <li>
+        <app-task-list-row [task]="task" (open)="openTask($event)" />
+      </li>
+    }
+  </ul>
+
+  <mat-paginator
+    [length]="total()"
+    [pageSize]="pageSize"
+    [pageIndex]="pageIndex()"
+    [hidePageSize]="true"
+    (page)="changePage($event)"
+  />
+} @else if (!loading()) {
+  <app-empty-state
+    icon="search_off"
+    title="No tasks match"
+    [message]="
+      activeFilterCount() ? 'Try removing a filter or two.' : 'This project has no tasks yet.'
+    "
+  />
+}
