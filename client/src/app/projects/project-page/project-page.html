@@ -19,7 +19,7 @@
 
     <div class="header-actions">
       @if (project.boards.length) {
-        <a mat-flat-button [routerLink]="['/projects', project.id, 'boards', project.boards[0].id]">
+        <a mat-flat-button [routerLink]="['/boards', project.boards[0].id]">
           <mat-icon>view_kanban</mat-icon>
           Open board
         </a>
@@ -63,7 +63,7 @@
       <ul class="boards">
         @for (board of project.boards; track board.id) {
           <li>
-            <a [routerLink]="['/projects', project.id, 'boards', board.id]">
+            <a [routerLink]="['/boards', board.id]">
               <mat-icon>view_kanban</mat-icon>
               <span>{{ board.name }}</span>
             </a>

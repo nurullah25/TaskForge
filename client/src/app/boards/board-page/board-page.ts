@@ -1,5 +1,5 @@
 import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
-import { Component, effect, inject, input, numberAttribute } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, numberAttribute } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,6 +7,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router, RouterLink } from '@angular/router';
 import { filter, switchMap } from 'rxjs';
+import { RealtimeService } from '../../core/realtime/realtime.service';
 import { WorkspaceService } from '../../core/workspace/workspace.service';
 import { confirmAction } from '../../shared/components/confirm-dialog/confirm-dialog';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
@@ -41,6 +42,7 @@ export class BoardPage {
   private readonly router = inject(Router);
   private readonly api = inject(BoardService);
   private readonly workspace = inject(WorkspaceService);
+  private readonly realtime = inject(RealtimeService);
   protected readonly store = inject(BoardStore);
 
   readonly boardId = input.required({ transform: numberAttribute });
@@ -51,7 +53,14 @@ export class BoardPage {
   private openTaskId: number | null = null;
 
   constructor() {
-    effect(() => this.store.load(this.boardId()));
+    effect((onCleanup) => {
+      const boardId = this.boardId();
+      this.store.load(boardId);
+
+      // Only the board being looked at receives live updates.
+      void this.realtime.joinBoard(boardId);
+      onCleanup(() => void this.realtime.leaveBoard(boardId));
+    });
 
     effect(() => {
       const taskId = Number(this.task());
@@ -139,9 +148,7 @@ export class BoardPage {
         filter(Boolean),
         switchMap((name) => this.api.create(board.projectId, name)),
       )
-      .subscribe((created) =>
-        this.router.navigate(['/projects', created.projectId, 'boards', created.id]),
-      );
+      .subscribe((created) => this.router.navigate(['/boards', created.id]));
   }
 
   protected deleteBoard(): void {

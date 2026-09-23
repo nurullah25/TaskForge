@@ -22,7 +22,7 @@
           </button>
           <mat-menu #boardMenu="matMenu">
             @for (other of store.projectBoards(); track other.id) {
-              <a mat-menu-item [routerLink]="['/projects', board.projectId, 'boards', other.id]">
+              <a mat-menu-item [routerLink]="['/boards', other.id]">
                 <mat-icon>{{ other.id === board.id ? 'check' : '' }}</mat-icon>
                 <span>{{ other.name }}</span>
               </a>

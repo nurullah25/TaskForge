@@ -1,6 +1,8 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, EMPTY, forkJoin, of, switchMap } from 'rxjs';
 import { ignoreHandledError } from '../core/http/api-error';
+import { BoardEvent, RealtimeService } from '../core/realtime/realtime.service';
 import { Label } from '../labels/label.models';
 import { LabelService } from '../labels/label.service';
 import { ProjectService } from '../projects/project.service';
@@ -17,6 +19,7 @@ export class BoardStore {
   private readonly tasks = inject(TaskService);
   private readonly projects = inject(ProjectService);
   private readonly labelApi = inject(LabelService);
+  private readonly realtime = inject(RealtimeService);
 
   readonly board = signal<Board | null>(null);
   readonly columns = signal<BoardColumn[]>([]);
@@ -29,6 +32,47 @@ export class BoardStore {
   readonly canManage = computed(() => this.board()?.myRole === 'Manager');
   readonly canEditTasks = computed(() => this.board()?.myRole !== 'Viewer');
   readonly dropListIds = computed(() => this.columns().map((column) => columnDropId(column.id)));
+
+  constructor() {
+    // Changes other people make arrive over the hub. Our own changes are filtered out
+    // by the server, which knows this browser's connection id.
+    this.realtime.boardEvents$
+      .pipe(takeUntilDestroyed())
+      .subscribe((event) => this.applyEvent(event));
+
+    // Anything that happened while the connection was down was missed, so start over.
+    this.realtime.reconnected$.pipe(takeUntilDestroyed()).subscribe(() => {
+      const board = this.board();
+      if (board) {
+        this.load(board.id);
+      }
+    });
+  }
+
+  private applyEvent(event: BoardEvent): void {
+    const board = this.board();
+    if (!board) {
+      return;
+    }
+
+    switch (event.type) {
+      case 'TaskCreated':
+      case 'TaskUpdated':
+      case 'TaskMoved': {
+        const card = event.payload as TaskCard;
+        if (card?.id) {
+          this.columns.update((columns) => placeCard(columns, card));
+        }
+        break;
+      }
+      case 'TaskDeleted':
+        this.removeTask(event.payload as number);
+        break;
+      case 'ColumnsChanged':
+        this.load(board.id);
+        break;
+    }
+  }
 
   load(boardId: number): void {
     this.loading.set(true);
@@ -206,6 +250,20 @@ export class BoardStore {
         ),
       );
   }
+}
+
+// Puts a card in the right column, in position order, whether it is new or moved.
+function placeCard(columns: BoardColumn[], card: TaskCard): BoardColumn[] {
+  return columns.map((column) => {
+    const others = column.tasks.filter((t) => t.id !== card.id);
+
+    if (column.id !== card.columnId) {
+      return { ...column, tasks: others };
+    }
+
+    const tasks = [...others, card].sort((a, b) => a.position - b.position || a.id - b.id);
+    return { ...column, tasks };
+  });
 }
 
 export function columnDropId(columnId: number): string {
