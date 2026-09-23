@@ -44,10 +44,15 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<BoardNotifier>();
 builder.Services.AddSingleton<IFileStorage, LocalFileStorage>();
 
-// SignalR has its own serializer settings, so the casing is set to match the REST API.
+// SignalR has its own serializer settings and ignores the ones above, so camelCase and
+// enums-as-strings are repeated here. Without this the hub sends priority as a number
+// while the REST API sends "Medium", and the client breaks on one of the two.
 builder.Services.AddSignalR()
     .AddJsonProtocol(options =>
-        options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
+    {
+        options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddSingleton<IUserIdProvider, SubjectUserIdProvider>();
 
 builder.Services.AddControllers()

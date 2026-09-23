@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -85,6 +86,9 @@ public class TaskForgeApiFactory : WebApplicationFactory<Program>, IAsyncLifetim
                 options.HttpMessageHandlerFactory = _ => Server.CreateHandler();
                 options.AccessTokenProvider = () => Task.FromResult<string?>(accessToken);
             })
+            // The hub sends enums as strings, like the REST API, so the client is told to expect that.
+            .AddJsonProtocol(options =>
+                options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
             .Build();
 }
 

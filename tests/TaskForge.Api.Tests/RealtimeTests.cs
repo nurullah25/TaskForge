@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using TaskForge.Api.Features.Boards;
@@ -66,6 +67,35 @@ public class RealtimeTests(TaskForgeApiFactory factory)
         await Task.Delay(500);
 
         Assert.Equal(0, events);
+    }
+
+    // The hub serializes payloads separately from the REST API. When the two disagree,
+    // the client gets a number where it expects "Medium" and the board stops updating.
+    [Fact]
+    public async Task Hub_payloads_use_the_same_json_shape_as_the_rest_api()
+    {
+        var (owner, _, ownerToken) = await factory.CreateSignedInUserAsync();
+        var organization = await owner.CreateOrganizationAsync();
+        var project = await owner.CreateProjectAsync(organization.Id);
+        var board = await owner.GetJsonAsync<BoardDto>($"/api/boards/{project.Boards[0].Id}");
+        var created = await owner.PostAsJsonAsync("/api/tasks",
+            new { ColumnId = board.Columns[0].Id, Title = "Check the wire format", Priority = "High" });
+        var task = await created.ReadJsonAsync<TaskDetailsDto>();
+
+        await using var connection = factory.CreateHubConnection(ownerToken);
+        var received = new TaskCompletionSource<JsonElement>();
+        connection.On<JsonElement>("TaskMoved", payload => received.TrySetResult(payload));
+        await connection.StartAsync();
+        await connection.InvokeAsync("JoinBoard", board.Id);
+
+        var (mover, moverUser) = await factory.CreateSignedInClientAsync();
+        await owner.AddOrganizationMemberAsync(organization.Id, moverUser.Email);
+        await owner.AddProjectMemberAsync(project.Id, moverUser.Id, "Contributor");
+        await mover.PostAsJsonAsync($"/api/tasks/{task.Id}/move", new { ColumnId = board.Columns[1].Id });
+
+        var card = await received.Task.WaitAsync(Timeout);
+        Assert.Equal("High", card.GetProperty("priority").GetString());
+        Assert.Equal(task.Id, card.GetProperty("id").GetInt32());
     }
 
     [Fact]
