@@ -48,6 +48,14 @@ Cards are dragged within a column and between columns. Instead of an index, the 
 
 Editing a task sends back the row version it was loaded with. If someone else saved first, the API answers `409` and the panel offers to reload their version instead of silently overwriting it. Moving a card into a `Done` column marks the task completed; moving it out reopens it. Every change is written to the activity history.
 
+## Search and dashboard
+
+Each project has a task list with filters for text, assignee, priority, status, label and due date, plus sorting and paging. The filters live in the query string, so a filtered list can be bookmarked or sent to a colleague. Typing is debounced and outdated responses are discarded, so fast typing doesn't produce a flicker of stale results.
+
+The board has its own quick filters. Those work on the cards already loaded and need no requests.
+
+The dashboard summarises the selected organization: projects, open tasks, completed, overdue, and what is assigned to you, with two small charts drawn as inline SVG. Members only see the projects they belong to; organization admins see everything.
+
 ## Real-time updates
 
 A single SignalR hub at `/hubs/app` keeps open boards in sync. A browser joins the group of the board it is showing and leaves it on navigation, so events only reach people actually looking at that board. Membership is checked again when joining, because reading a group is reading other people's work.
