@@ -1,0 +1,72 @@
+@if (task(); as task) {
+  <header class="panel-header">
+    <div class="identity">
+      <span class="key-badge">{{ key() }}</span>
+      <span class="muted column">in {{ task.columnName }}</span>
+    </div>
+
+    <div class="header-actions">
+      @if (canEdit()) {
+        <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Task options">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu" xPosition="before">
+          <button mat-menu-item (click)="deleteTask()">
+            <mat-icon>delete</mat-icon>
+            <span>Delete task</span>
+          </button>
+        </mat-menu>
+      }
+      <button mat-icon-button aria-label="Close" (click)="close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  <div class="panel-body">
+    @if (errorMessage(); as message) {
+      <div class="form-error" role="alert">
+        <mat-icon>error</mat-icon>
+        <span>{{ message }}</span>
+        <button mat-button (click)="reload()">Reload</button>
+      </div>
+    }
+
+    <app-task-fields [form]="form" [members]="members" />
+
+    <dl class="facts">
+      <div>
+        <dt class="muted">Reporter</dt>
+        <dd>
+          <app-user-avatar [name]="task.reporter.fullName" [size]="22" />
+          {{ task.reporter.fullName }}
+        </dd>
+      </div>
+      <div>
+        <dt class="muted">Created</dt>
+        <dd>{{ task.createdAt | date: 'medium' }}</dd>
+      </div>
+      <div>
+        <dt class="muted">Last updated</dt>
+        <dd>{{ task.updatedAt | date: 'medium' }}</dd>
+      </div>
+      @if (task.completedAt) {
+        <div>
+          <dt class="muted">Completed</dt>
+          <dd>{{ task.completedAt | date: 'medium' }}</dd>
+        </div>
+      }
+    </dl>
+  </div>
+
+  @if (canEdit()) {
+    <footer class="panel-footer">
+      <button mat-button (click)="close()">Close</button>
+      <button mat-flat-button [disabled]="form.pristine || saving()" (click)="save()">
+        {{ saving() ? 'Saving…' : 'Save changes' }}
+      </button>
+    </footer>
+  }
+} @else {
+  <mat-progress-bar mode="indeterminate" />
+}

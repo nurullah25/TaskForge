@@ -1,0 +1,52 @@
+<div [formGroup]="form()">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Title</mat-label>
+    <input matInput formControlName="title" cdkFocusInitial />
+    @if (form().controls['title'].hasError('required')) {
+      <mat-error>Title is required</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Description</mat-label>
+    <textarea matInput formControlName="description" rows="5"></textarea>
+  </mat-form-field>
+
+  <div class="form-row">
+    <mat-form-field appearance="outline">
+      <mat-label>Priority</mat-label>
+      <mat-select formControlName="priority">
+        @for (priority of priorities; track priority) {
+          <mat-option [value]="priority">
+            <span class="option">
+              <app-priority-chip [priority]="priority" />
+              {{ priority }}
+            </span>
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Assignee</mat-label>
+      <mat-select formControlName="assigneeId">
+        <mat-option [value]="null">Unassigned</mat-option>
+        @for (member of members(); track member.id) {
+          <mat-option [value]="member.id">
+            <span class="option">
+              <app-user-avatar [name]="member.fullName" [size]="22" />
+              {{ member.fullName }}
+            </span>
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Due date</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="dueDate" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker" />
+      <mat-datepicker #picker />
+    </mat-form-field>
+  </div>
+</div>
