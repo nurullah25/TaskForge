@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -27,6 +27,9 @@ import { PriorityChip } from '../priority-chip/priority-chip';
       display: flex;
       align-items: center;
       gap: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   `,
 })
@@ -35,4 +38,10 @@ export class TaskFields {
   readonly members = input.required<TaskMember[]>();
 
   protected readonly priorities = TASK_PRIORITIES;
+
+  // Used by the closed assignee select, which shows the person rather than the id.
+  protected readonly selectedMember = computed(() => {
+    const id = this.form().controls['assigneeId'].value as number | null;
+    return this.members().find((member) => member.id === id) ?? null;
+  });
 }

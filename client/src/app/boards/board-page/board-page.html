@@ -71,6 +71,7 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Assignee</mat-label>
       <mat-select
         [value]="store.filterAssigneeId()"
         (selectionChange)="store.filterAssigneeId.set($event.value)"
@@ -85,6 +86,7 @@
 
     @if (store.labels().length) {
       <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Label</mat-label>
         <mat-select
           [value]="store.filterLabelId()"
           (selectionChange)="store.filterLabelId.set($event.value)"

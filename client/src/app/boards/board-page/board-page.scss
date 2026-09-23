@@ -98,3 +98,14 @@
     margin-left: auto;
   }
 }
+
+@media (max-width: 599px) {
+  .board-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-bar .all-tasks {
+    margin-left: 0;
+  }
+}

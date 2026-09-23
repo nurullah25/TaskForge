@@ -16,6 +16,12 @@
     <mat-form-field appearance="outline">
       <mat-label>Priority</mat-label>
       <mat-select formControlName="priority">
+        <mat-select-trigger>
+          <span class="option">
+            <app-priority-chip [priority]="form().controls['priority'].value" />
+            {{ form().controls['priority'].value }}
+          </span>
+        </mat-select-trigger>
         @for (priority of priorities; track priority) {
           <mat-option [value]="priority">
             <span class="option">
@@ -30,6 +36,16 @@
     <mat-form-field appearance="outline">
       <mat-label>Assignee</mat-label>
       <mat-select formControlName="assigneeId">
+        <mat-select-trigger>
+          @if (selectedMember(); as member) {
+            <span class="option">
+              <app-user-avatar [name]="member.fullName" [size]="22" />
+              {{ member.fullName }}
+            </span>
+          } @else {
+            Unassigned
+          }
+        </mat-select-trigger>
         <mat-option [value]="null">Unassigned</mat-option>
         @for (member of members(); track member.id) {
           <mat-option [value]="member.id">
