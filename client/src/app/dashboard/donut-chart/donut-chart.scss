@@ -1,0 +1,64 @@
+.chart {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+svg {
+  width: 132px;
+  height: 132px;
+  flex-shrink: 0;
+  transform: rotate(-90deg);
+}
+
+circle {
+  fill: none;
+  stroke-width: 4.5;
+}
+
+.track {
+  stroke: var(--tf-border);
+}
+
+text {
+  transform: rotate(90deg);
+  transform-origin: center;
+  text-anchor: middle;
+  fill: var(--mat-sys-on-surface);
+}
+
+.value {
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.caption {
+  font-size: 3px;
+  fill: var(--tf-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.legend {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+  }
+
+  strong {
+    margin-left: auto;
+  }
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}

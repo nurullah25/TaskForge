@@ -1,0 +1,59 @@
+<app-page-header [title]="greeting()" [subtitle]="workspace.currentOrganization()?.name || ''" />
+
+@if (workspace.organizationsLoaded() && workspace.organizations().length === 0) {
+  <app-empty-state
+    icon="rocket_launch"
+    title="Welcome to TaskForge"
+    message="Create an organization for your team, then add projects and invite colleagues."
+  >
+    <button mat-flat-button (click)="createOrganization()">Create organization</button>
+  </app-empty-state>
+} @else if (summary(); as summary) {
+  <div class="stats">
+    <mat-card appearance="outlined" class="stat">
+      <span class="label muted">Projects</span>
+      <span class="value">{{ summary.projectCount }}</span>
+    </mat-card>
+    <mat-card appearance="outlined" class="stat">
+      <span class="label muted">Open tasks</span>
+      <span class="value">{{ summary.openTaskCount }}</span>
+    </mat-card>
+    <mat-card appearance="outlined" class="stat">
+      <span class="label muted">Completed</span>
+      <span class="value">{{ summary.completedTaskCount }}</span>
+    </mat-card>
+    <mat-card appearance="outlined" class="stat" [class.warning]="summary.overdueTaskCount > 0">
+      <span class="label muted">Overdue</span>
+      <span class="value">{{ summary.overdueTaskCount }}</span>
+    </mat-card>
+    <mat-card appearance="outlined" class="stat">
+      <span class="label muted">Assigned to me</span>
+      <span class="value">{{ summary.myOpenTaskCount }}</span>
+    </mat-card>
+  </div>
+
+  <div class="charts">
+    <mat-card appearance="outlined" class="section">
+      <h2>Open work by status</h2>
+      <app-donut-chart [slices]="byCategory()" label="Open tasks by status" centerLabel="open" />
+    </mat-card>
+
+    <mat-card appearance="outlined" class="section">
+      <h2>Open work by priority</h2>
+      <app-bar-chart [slices]="byPriority()" />
+    </mat-card>
+  </div>
+
+  <mat-card appearance="outlined" class="section">
+    <h2>My tasks</h2>
+    <p class="section-description">Open tasks assigned to you, soonest deadline first.</p>
+
+    <ul class="my-tasks">
+      @for (task of summary.myTasks; track task.id) {
+        <li><app-task-list-row [task]="task" (open)="openTask($event)" /></li>
+      } @empty {
+        <li class="muted nothing">Nothing is assigned to you right now.</li>
+      }
+    </ul>
+  </mat-card>
+}

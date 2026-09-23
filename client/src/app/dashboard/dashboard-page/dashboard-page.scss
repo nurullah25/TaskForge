@@ -1,0 +1,52 @@
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 20px;
+  background: var(--mat-sys-surface);
+
+  .label {
+    font-size: 13px;
+  }
+
+  .value {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  &.warning .value {
+    color: var(--mat-sys-error);
+  }
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+
+  .section {
+    margin-bottom: 24px;
+  }
+}
+
+.my-tasks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    margin-bottom: 8px;
+  }
+}
+
+.nothing {
+  font-size: 14px;
+}
