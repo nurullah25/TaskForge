@@ -48,6 +48,17 @@ Cards are dragged within a column and between columns. Instead of an index, the 
 
 Editing a task sends back the row version it was loaded with. If someone else saved first, the API answers `409` and the panel offers to reload their version instead of silently overwriting it. Moving a card into a `Done` column marks the task completed; moving it out reopens it. Every change is written to the activity history.
 
+## Collaboration
+
+Each task panel has tabs for details, comments, files and history.
+
+- **Labels** belong to a project, are unique by name within it, and show on the cards. Deleting one takes it off every task that used it.
+- **Comments** are paged, can be edited by their author, and deleted by the author or a project manager. Viewers may comment even though they can't change tasks.
+- **History** records every change to a task — created, renamed, reassigned, moved, priority and due date changes, comments and uploads — and the project page shows the latest entries across all its tasks.
+- **Attachments** are stored on disk under `App_Data/uploads` with a generated name, never the uploaded one. Files are limited to 10 MB and to an allow-list of types, and downloads go through the API so permissions are checked.
+
+Times are stored in UTC and sent as UTC timestamps, so the browser shows them in the reader's own timezone.
+
 ## Roles and permissions
 
 Work is organized as organization → projects → boards → tasks. Access is checked on the server for every request, using roles stored in the database rather than in the token, so a role change takes effect immediately.
