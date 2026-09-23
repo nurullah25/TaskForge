@@ -58,3 +58,72 @@ a {
 .muted {
   color: var(--tf-muted);
 }
+
+// Error box shown above a form when the server rejects it.
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  font-size: 14px;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// Card-style section used on settings pages.
+.section {
+  margin-bottom: 24px;
+  padding: 24px;
+  background: var(--mat-sys-surface);
+
+  h2 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .section-description {
+    margin: 0 0 20px;
+    color: var(--tf-muted);
+    font-size: 14px;
+  }
+
+  &.danger {
+    border-color: var(--mat-sys-error);
+  }
+}
+
+.key-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.destructive-button {
+  --mat-button-filled-container-color: var(--mat-sys-error);
+  --mat-button-filled-label-text-color: var(--mat-sys-on-error);
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  > * {
+    flex: 1;
+    min-width: 180px;
+  }
+}

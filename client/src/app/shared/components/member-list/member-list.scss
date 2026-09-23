@@ -1,0 +1,63 @@
+.members {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.member {
+  display: grid;
+  grid-template-columns: auto 1fr 150px 40px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--tf-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 500;
+}
+
+.email {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.role-select {
+  font-size: 14px;
+}
+
+.role {
+  font-size: 14px;
+}
+
+.empty {
+  padding: 12px 0;
+}
+
+@media (max-width: 599px) {
+  .member {
+    grid-template-columns: auto 1fr 40px;
+  }
+
+  .role-select,
+  .role {
+    grid-column: 2;
+  }
+
+  .remove {
+    grid-row: 1;
+    grid-column: 3;
+  }
+}

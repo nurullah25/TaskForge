@@ -1,0 +1,51 @@
+<ul class="members">
+  <!-- Tracked by object so a replaced member re-renders, e.g. to undo a rejected role change. -->
+  @for (member of members(); track member) {
+    @let isMe = member.userId === currentUserId();
+    @let editable = canEdit()(member);
+
+    <li class="member">
+      <app-user-avatar [name]="member.fullName" [size]="36" />
+
+      <div class="identity">
+        <span class="name">
+          {{ member.fullName }}
+          @if (isMe) {
+            <span class="muted">(you)</span>
+          }
+        </span>
+        <span class="email muted">{{ member.email }}</span>
+      </div>
+
+      @if (editable) {
+        <mat-select
+          class="role-select"
+          [value]="member.role"
+          [attr.aria-label]="'Role of ' + member.fullName"
+          (selectionChange)="roleChange.emit({ member, role: $event.value })"
+        >
+          @for (role of roles(); track role) {
+            <mat-option [value]="role">{{ role }}</mat-option>
+          }
+        </mat-select>
+      } @else {
+        <span class="role">{{ member.role }}</span>
+      }
+
+      <span class="remove">
+        @if (editable || isMe) {
+          <button
+            mat-icon-button
+            [matTooltip]="isMe ? 'Leave' : 'Remove'"
+            [attr.aria-label]="isMe ? 'Leave' : 'Remove ' + member.fullName"
+            (click)="remove.emit(member)"
+          >
+            <mat-icon>{{ isMe ? 'logout' : 'person_remove' }}</mat-icon>
+          </button>
+        }
+      </span>
+    </li>
+  } @empty {
+    <li class="muted empty">No members yet.</li>
+  }
+</ul>
