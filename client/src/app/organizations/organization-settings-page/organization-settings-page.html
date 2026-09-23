@@ -1,0 +1,90 @@
+@if (notFound()) {
+  <app-empty-state
+    icon="domain_disabled"
+    title="Organization not found"
+    message="It may have been deleted, or you're no longer a member."
+  />
+} @else if (organization(); as organization) {
+  <app-page-header title="Organization settings" [subtitle]="organization.name" />
+
+  <mat-card appearance="outlined" class="section">
+    <h2>General</h2>
+    <p class="section-description">The name everyone in the organization sees.</p>
+
+    <form class="form-row" [formGroup]="nameForm" (ngSubmit)="rename()">
+      <mat-form-field appearance="outline">
+        <mat-label>Organization name</mat-label>
+        <input matInput formControlName="name" />
+        @if (nameForm.controls.name.hasError('required')) {
+          <mat-error>Name is required</mat-error>
+        }
+      </mat-form-field>
+    </form>
+    @if (canManage()) {
+      <div>
+        <button mat-flat-button (click)="rename()" [disabled]="nameForm.pristine || nameForm.invalid">
+          Save
+        </button>
+      </div>
+    }
+  </mat-card>
+
+  <mat-card appearance="outlined" class="section">
+    <h2>Members</h2>
+    <p class="section-description">
+      People in the organization. Admins and owners can manage every project.
+    </p>
+
+    @if (canManage()) {
+      @if (addError(); as message) {
+        <div class="form-error" role="alert"><mat-icon>error</mat-icon>{{ message }}</div>
+      }
+      <form class="form-row" [formGroup]="addForm" (ngSubmit)="addMember()" novalidate>
+        <mat-form-field appearance="outline">
+          <mat-label>Email of a TaskForge user</mat-label>
+          <input matInput type="email" formControlName="email" />
+          @if (addForm.controls.email.hasError('email')) {
+            <mat-error>Enter a valid email address</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Role</mat-label>
+          <mat-select formControlName="role">
+            @for (role of assignableRoles(); track role) {
+              <mat-option [value]="role">{{ role }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <div>
+          <button mat-flat-button type="submit">
+            <mat-icon>person_add</mat-icon>
+            Add member
+          </button>
+        </div>
+      </form>
+    }
+
+    <app-member-list
+      [members]="members()"
+      [roles]="assignableRoles()"
+      [currentUserId]="currentUserId()"
+      [canEdit]="canEditMember()"
+      (roleChange)="changeRole($event.member, $event.role)"
+      (remove)="removeMember($event)"
+    />
+  </mat-card>
+
+  @if (isOwner()) {
+    <mat-card appearance="outlined" class="section danger">
+      <h2>Delete organization</h2>
+      <p class="section-description">
+        Permanently delete {{ organization.name }}. Delete or move its projects first.
+      </p>
+      <div>
+        <button mat-flat-button class="destructive-button" (click)="deleteOrganization()">
+          Delete organization
+        </button>
+      </div>
+    </mat-card>
+  }
+}

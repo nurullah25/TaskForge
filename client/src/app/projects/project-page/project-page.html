@@ -1,0 +1,58 @@
+@if (notFound()) {
+  <app-empty-state
+    icon="folder_off"
+    title="Project not found"
+    message="It may have been deleted, or you don't have access to it."
+  >
+    <a mat-flat-button routerLink="/projects">Back to projects</a>
+  </app-empty-state>
+} @else if (project(); as project) {
+  <header class="header">
+    <div>
+      <div class="meta">
+        <span class="key-badge">{{ project.key }}</span>
+        <app-project-status-chip [status]="project.status" />
+        <span class="muted">{{ project.organizationName }}</span>
+      </div>
+      <h1>{{ project.name }}</h1>
+    </div>
+
+    @if (project.myRole === 'Manager') {
+      <a mat-stroked-button [routerLink]="['/projects', project.id, 'settings']">
+        <mat-icon>settings</mat-icon>
+        Settings
+      </a>
+    }
+  </header>
+
+  <div class="layout">
+    <mat-card appearance="outlined" class="section">
+      <h2>About</h2>
+      <p class="description">{{ project.description || 'No description yet.' }}</p>
+      <dl class="facts">
+        <div>
+          <dt class="muted">Created</dt>
+          <dd>{{ project.createdAt | date: 'mediumDate' }}</dd>
+        </div>
+        <div>
+          <dt class="muted">Your role</dt>
+          <dd>{{ project.myRole }}</dd>
+        </div>
+      </dl>
+    </mat-card>
+
+    <mat-card appearance="outlined" class="section">
+      <h2>Boards</h2>
+      <ul class="boards">
+        @for (board of project.boards; track board.id) {
+          <li>
+            <mat-icon>view_kanban</mat-icon>
+            <span>{{ board.name }}</span>
+          </li>
+        } @empty {
+          <li class="muted">No boards yet.</li>
+        }
+      </ul>
+    </mat-card>
+  </div>
+}

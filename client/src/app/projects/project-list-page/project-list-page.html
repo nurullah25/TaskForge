@@ -1,0 +1,63 @@
+@let organization = workspace.currentOrganization();
+
+@if (workspace.organizationsLoaded() && !organization) {
+  <app-empty-state
+    icon="domain_add"
+    title="Create an organization first"
+    message="Projects belong to an organization. Create one, or ask a colleague to add you to theirs."
+  >
+    <button mat-flat-button (click)="createOrganization()">Create organization</button>
+  </app-empty-state>
+} @else if (organization) {
+  <app-page-header title="Projects" [subtitle]="organization.name">
+    @if (workspace.canManageCurrentOrganization()) {
+      <button mat-flat-button (click)="createProject()">
+        <mat-icon>add</mat-icon>
+        New project
+      </button>
+    }
+  </app-page-header>
+
+  <div class="toolbar">
+    <mat-button-toggle-group
+      hideSingleSelectionIndicator
+      aria-label="Filter projects by status"
+      [value]="statusFilter()"
+      (change)="statusFilter.set($event.value)"
+    >
+      <mat-button-toggle value="current">Current</mat-button-toggle>
+      <mat-button-toggle value="archived">Archived</mat-button-toggle>
+      <mat-button-toggle value="all">All</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  @if (workspace.projectsLoading()) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else {
+    <div class="grid">
+      @for (project of visibleProjects(); track project.id) {
+        <app-project-card [project]="project" />
+      }
+    </div>
+
+    @if (visibleProjects().length === 0) {
+      @if (workspace.projects().length === 0) {
+        <app-empty-state
+          icon="folder_open"
+          title="No projects yet"
+          [message]="
+            workspace.canManageCurrentOrganization()
+              ? 'Create the first project to start planning work.'
+              : 'You are not on any projects in this organization yet.'
+          "
+        >
+          @if (workspace.canManageCurrentOrganization()) {
+            <button mat-flat-button (click)="createProject()">New project</button>
+          }
+        </app-empty-state>
+      } @else {
+        <app-empty-state icon="filter_alt_off" title="No projects match this filter" />
+      }
+    }
+  }
+}

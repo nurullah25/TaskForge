@@ -1,0 +1,37 @@
+<h2 mat-dialog-title>New project</h2>
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <mat-dialog-content>
+    @if (errorMessage(); as message) {
+      <div class="form-error" role="alert"><mat-icon>error</mat-icon>{{ message }}</div>
+    }
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Project name</mat-label>
+      <input matInput formControlName="name" placeholder="e.g. Customer Portal" cdkFocusInitial />
+      @if (form.controls.name.hasError('required')) {
+        <mat-error>Name is required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width key-field">
+      <mat-label>Key</mat-label>
+      <input matInput class="uppercase" formControlName="key" maxlength="10" />
+      <mat-hint>Used in task IDs, e.g. {{ (form.controls.key.value || 'KEY').toUpperCase() }}-12</mat-hint>
+      @if (form.controls.key.hasError('required')) {
+        <mat-error>Key is required</mat-error>
+      } @else if (form.controls.key.hasError('pattern')) {
+        <mat-error>2-10 letters or digits, starting with a letter</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description (optional)</mat-label>
+      <textarea matInput formControlName="description" rows="3"></textarea>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close>Cancel</button>
+    <button mat-flat-button type="submit" [disabled]="saving()">Create project</button>
+  </mat-dialog-actions>
+</form>
