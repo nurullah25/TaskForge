@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TaskForge.Api.Data;
@@ -54,6 +55,14 @@ public class TaskForgeApiFactory : WebApplicationFactory<Program>, IAsyncLifetim
     // Registers a brand new user and returns a client that sends their access token.
     public async Task<(HttpClient Client, UserDto User)> CreateSignedInClientAsync(string fullName = "Test User")
     {
+        var (client, user, _) = await CreateSignedInUserAsync(fullName);
+        return (client, user);
+    }
+
+    // Same, but also hands back the raw token for tests that open a hub connection.
+    public async Task<(HttpClient Client, UserDto User, string AccessToken)> CreateSignedInUserAsync(
+        string fullName = "Test User")
+    {
         var client = CreateApiClient();
         var response = await client.PostAsJsonAsync("/api/auth/register", new
         {
@@ -65,8 +74,18 @@ public class TaskForgeApiFactory : WebApplicationFactory<Program>, IAsyncLifetim
 
         var auth = (await response.Content.ReadFromJsonAsync<AuthResponse>())!;
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
-        return (client, auth.User);
+        return (client, auth.User, auth.AccessToken);
     }
+
+    // A real SignalR connection that talks to the in-memory test server.
+    public HubConnection CreateHubConnection(string accessToken) =>
+        new HubConnectionBuilder()
+            .WithUrl($"{Server.BaseAddress}hubs/app", options =>
+            {
+                options.HttpMessageHandlerFactory = _ => Server.CreateHandler();
+                options.AccessTokenProvider = () => Task.FromResult<string?>(accessToken);
+            })
+            .Build();
 }
 
 [CollectionDefinition(Name)]
