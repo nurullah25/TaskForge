@@ -42,7 +42,9 @@
       </mat-form-field>
 
       @if (isManager()) {
-        <button mat-flat-button type="submit" [disabled]="generalForm.pristine">Save changes</button>
+        <button mat-flat-button type="submit" [disabled]="generalForm.pristine">
+          Save changes
+        </button>
       }
     </form>
   </mat-card>
@@ -50,8 +52,8 @@
   <mat-card appearance="outlined" class="section">
     <h2>Members</h2>
     <p class="section-description">
-      Managers change settings and members, contributors work on tasks, viewers can read and comment.
-      Organization admins can always manage the project.
+      Managers change settings and members, contributors work on tasks, viewers can read and
+      comment. Organization admins can always manage the project.
     </p>
 
     @if (isManager()) {
@@ -63,9 +65,13 @@
           <mat-label>Add from organization</mat-label>
           <mat-select formControlName="userId">
             @for (person of candidates(); track person.userId) {
-              <mat-option [value]="person.userId">{{ person.fullName }} · {{ person.email }}</mat-option>
+              <mat-option [value]="person.userId"
+                >{{ person.fullName }} · {{ person.email }}</mat-option
+              >
             } @empty {
-              <mat-option disabled>Everyone in the organization is already on this project</mat-option>
+              <mat-option disabled
+                >Everyone in the organization is already on this project</mat-option
+              >
             }
           </mat-select>
         </mat-form-field>
@@ -104,7 +110,9 @@
         set the status to Archived instead.
       </p>
       <div>
-        <button mat-flat-button class="destructive-button" (click)="deleteProject()">Delete project</button>
+        <button mat-flat-button class="destructive-button" (click)="deleteProject()">
+          Delete project
+        </button>
       </div>
     </mat-card>
   }

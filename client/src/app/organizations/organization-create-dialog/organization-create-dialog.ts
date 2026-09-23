@@ -13,12 +13,21 @@ import { OrganizationService } from '../organization.service';
 
 @Component({
   selector: 'app-organization-create-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule],
+  imports: [
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+  ],
   template: `
     <h2 mat-dialog-title>Create organization</h2>
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
       <mat-dialog-content>
-        <p class="muted intro">An organization holds your team's projects. You can add people once it's created.</p>
+        <p class="muted intro">
+          An organization holds your team's projects. You can add people once it's created.
+        </p>
 
         @if (errorMessage(); as message) {
           <div class="form-error" role="alert"><mat-icon>error</mat-icon>{{ message }}</div>

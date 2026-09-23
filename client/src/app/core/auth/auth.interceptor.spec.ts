@@ -67,10 +67,15 @@ describe('authInterceptor', () => {
 
     http.get('/api/projects').subscribe({ error: () => {} });
     httpMock.expectOne('/api/projects').flush(null, { status: 401, statusText: 'Unauthorized' });
-    httpMock.expectOne('/api/auth/refresh').flush(null, { status: 401, statusText: 'Unauthorized' });
+    httpMock
+      .expectOne('/api/auth/refresh')
+      .flush(null, { status: 401, statusText: 'Unauthorized' });
 
     expect(auth.isSignedIn()).toBe(false);
-    expect(navigate).toHaveBeenCalledWith(['/login'], expect.objectContaining({ queryParams: expect.anything() }));
+    expect(navigate).toHaveBeenCalledWith(
+      ['/login'],
+      expect.objectContaining({ queryParams: expect.anything() }),
+    );
   });
 });
 

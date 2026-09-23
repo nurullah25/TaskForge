@@ -41,7 +41,9 @@ import { ProjectStatusChip } from '../project-status-chip/project-status-chip';
       padding: 20px;
       box-sizing: border-box;
       background: var(--mat-sys-surface);
-      transition: border-color 0.15s, box-shadow 0.15s;
+      transition:
+        border-color 0.15s,
+        box-shadow 0.15s;
 
       &:hover {
         border-color: var(--mat-sys-primary);

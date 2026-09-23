@@ -16,7 +16,14 @@ interface NavItem {
 
 @Component({
   selector: 'app-sidebar',
-  imports: [MatListModule, MatIconModule, MatMenuModule, MatDividerModule, RouterLink, RouterLinkActive],
+  imports: [
+    MatListModule,
+    MatIconModule,
+    MatMenuModule,
+    MatDividerModule,
+    RouterLink,
+    RouterLinkActive,
+  ],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss',
 })

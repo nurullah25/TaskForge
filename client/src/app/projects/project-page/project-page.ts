@@ -13,7 +13,15 @@ import { ProjectStatusChip } from '../project-status-chip/project-status-chip';
 
 @Component({
   selector: 'app-project-page',
-  imports: [DatePipe, MatButtonModule, MatCardModule, MatIconModule, RouterLink, EmptyState, ProjectStatusChip],
+  imports: [
+    DatePipe,
+    MatButtonModule,
+    MatCardModule,
+    MatIconModule,
+    RouterLink,
+    EmptyState,
+    ProjectStatusChip,
+  ],
   templateUrl: './project-page.html',
   styleUrl: './project-page.scss',
 })

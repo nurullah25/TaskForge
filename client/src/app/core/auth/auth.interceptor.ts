@@ -4,7 +4,12 @@ import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
 
 // Requests that must never trigger a refresh-and-retry, or we'd loop on a dead session.
-const AUTH_ENDPOINTS = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/logout'];
+const AUTH_ENDPOINTS = [
+  '/api/auth/login',
+  '/api/auth/register',
+  '/api/auth/refresh',
+  '/api/auth/logout',
+];
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const auth = inject(AuthService);

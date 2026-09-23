@@ -36,7 +36,9 @@ export class OrganizationService {
   }
 
   updateMember(id: number, userId: number, role: OrganizationRole): Observable<OrganizationMember> {
-    return this.http.put<OrganizationMember>(`/api/organizations/${id}/members/${userId}`, { role });
+    return this.http.put<OrganizationMember>(`/api/organizations/${id}/members/${userId}`, {
+      role,
+    });
   }
 
   removeMember(id: number, userId: number): Observable<void> {

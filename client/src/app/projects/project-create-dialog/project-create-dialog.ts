@@ -2,7 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -13,7 +18,14 @@ import { ProjectService } from '../project.service';
 
 @Component({
   selector: 'app-project-create-dialog',
-  imports: [ReactiveFormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule],
+  imports: [
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+  ],
   templateUrl: './project-create-dialog.html',
   styles: `
     .key-field {
@@ -64,7 +76,11 @@ export class ProjectCreateDialog {
     this.errorMessage.set(null);
 
     this.api
-      .create(this.organizationId, { name, key: key.toUpperCase(), description: description || null })
+      .create(this.organizationId, {
+        name,
+        key: key.toUpperCase(),
+        description: description || null,
+      })
       .subscribe({
         next: (project) => {
           this.workspace.reloadProjects();

@@ -9,7 +9,14 @@ import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-topbar',
-  imports: [MatToolbarModule, MatButtonModule, MatIconModule, MatMenuModule, MatDividerModule, UserAvatar],
+  imports: [
+    MatToolbarModule,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    MatDividerModule,
+    UserAvatar,
+  ],
   templateUrl: './topbar.html',
   styleUrl: './topbar.scss',
 })

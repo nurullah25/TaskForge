@@ -16,7 +16,9 @@
     <mat-form-field appearance="outline" class="full-width key-field">
       <mat-label>Key</mat-label>
       <input matInput class="uppercase" formControlName="key" maxlength="10" />
-      <mat-hint>Used in task IDs, e.g. {{ (form.controls.key.value || 'KEY').toUpperCase() }}-12</mat-hint>
+      <mat-hint
+        >Used in task IDs, e.g. {{ (form.controls.key.value || 'KEY').toUpperCase() }}-12</mat-hint
+      >
       @if (form.controls.key.hasError('required')) {
         <mat-error>Key is required</mat-error>
       } @else if (form.controls.key.hasError('pattern')) {

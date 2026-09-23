@@ -1,6 +1,15 @@
 import { Component, computed, input } from '@angular/core';
 
-const COLORS = ['#2563eb', '#7c3aed', '#db2777', '#ea580c', '#059669', '#0891b2', '#4f46e5', '#b45309'];
+const COLORS = [
+  '#2563eb',
+  '#7c3aed',
+  '#db2777',
+  '#ea580c',
+  '#059669',
+  '#0891b2',
+  '#4f46e5',
+  '#b45309',
+];
 
 @Component({
   selector: 'app-user-avatar',

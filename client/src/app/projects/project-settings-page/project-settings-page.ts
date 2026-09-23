@@ -70,8 +70,8 @@ export class ProjectSettingsPage {
 
   protected readonly currentUserId = computed(() => this.auth.currentUser()?.id);
   protected readonly isManager = computed(() => this.project()?.myRole === 'Manager');
-  protected readonly canEditMember = computed(() => (member: MemberRow) =>
-    this.isManager() && member.userId !== this.currentUserId(),
+  protected readonly canEditMember = computed(
+    () => (member: MemberRow) => this.isManager() && member.userId !== this.currentUserId(),
   );
 
   // Organization members who aren't on the project yet.
@@ -128,11 +128,13 @@ export class ProjectSettingsPage {
     }
 
     const { name, description, status } = this.generalForm.getRawValue();
-    this.api.update(project.id, { name, description: description || null, status }).subscribe((updated) => {
-      this.setProject(updated);
-      this.workspace.reloadProjects();
-      this.snackBar.open('Project saved', undefined, { duration: 3000 });
-    });
+    this.api
+      .update(project.id, { name, description: description || null, status })
+      .subscribe((updated) => {
+        this.setProject(updated);
+        this.workspace.reloadProjects();
+        this.snackBar.open('Project saved', undefined, { duration: 3000 });
+      });
   }
 
   protected addMember(): void {
@@ -195,7 +197,8 @@ export class ProjectSettingsPage {
 
     confirmAction(this.dialog, {
       title: `Delete ${project.name}?`,
-      message: 'All boards, tasks, comments and history in this project are deleted permanently. This cannot be undone.',
+      message:
+        'All boards, tasks, comments and history in this project are deleted permanently. This cannot be undone.',
       confirmLabel: 'Delete project',
       destructive: true,
     })

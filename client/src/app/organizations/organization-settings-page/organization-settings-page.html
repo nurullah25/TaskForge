@@ -22,7 +22,11 @@
     </form>
     @if (canManage()) {
       <div>
-        <button mat-flat-button (click)="rename()" [disabled]="nameForm.pristine || nameForm.invalid">
+        <button
+          mat-flat-button
+          (click)="rename()"
+          [disabled]="nameForm.pristine || nameForm.invalid"
+        >
           Save
         </button>
       </div>

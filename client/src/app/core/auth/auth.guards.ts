@@ -8,7 +8,9 @@ export const authGuard: CanActivateFn = (_route, state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  return auth.isSignedIn() || router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+  return (
+    auth.isSignedIn() || router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } })
+  );
 };
 
 // Keeps signed-in users away from the login and register pages.

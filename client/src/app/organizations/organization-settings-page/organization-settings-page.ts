@@ -67,10 +67,11 @@ export class OrganizationSettingsPage {
   protected readonly assignableRoles = computed<OrganizationRole[]>(() =>
     this.isOwner() ? ORGANIZATION_ROLES : ['Admin', 'Member'],
   );
-  protected readonly canEditMember = computed(() => (member: MemberRow) =>
-    this.canManage() &&
-    member.userId !== this.currentUserId() &&
-    (this.isOwner() || member.role !== 'Owner'),
+  protected readonly canEditMember = computed(
+    () => (member: MemberRow) =>
+      this.canManage() &&
+      member.userId !== this.currentUserId() &&
+      (this.isOwner() || member.role !== 'Owner'),
   );
 
   protected readonly nameForm = this.formBuilder.group({

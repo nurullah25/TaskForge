@@ -26,7 +26,11 @@
     <mat-divider />
   }
   @if (current) {
-    <a mat-menu-item [routerLink]="['/organizations', current.id, 'settings']" (click)="linkClicked.emit()">
+    <a
+      mat-menu-item
+      [routerLink]="['/organizations', current.id, 'settings']"
+      (click)="linkClicked.emit()"
+    >
       <mat-icon>settings</mat-icon>
       <span>Organization settings</span>
     </a>
