@@ -1,0 +1,31 @@
+@let col = column();
+
+<section class="column" cdkDrag [cdkDragDisabled]="!canManage()" cdkDragLockAxis="x">
+  <header class="column-header" [class.draggable]="canManage()" cdkDragHandle>
+    <span class="category-dot" [class]="'category-dot ' + col.category.toLowerCase()" aria-hidden="true"></span>
+    <h2 class="column-name">{{ col.name }}</h2>
+    @if (taskCount()) {
+      <span class="count">{{ taskCount() }}</span>
+    }
+
+    @if (canManage()) {
+      <button mat-icon-button class="menu-button" [matMenuTriggerFor]="menu" [attr.aria-label]="'Column ' + col.name + ' options'">
+        <mat-icon>more_horiz</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu" xPosition="before">
+        <button mat-menu-item (click)="edit.emit(col)">
+          <mat-icon>edit</mat-icon>
+          <span>Edit column</span>
+        </button>
+        <button mat-menu-item (click)="remove.emit(col)">
+          <mat-icon>delete</mat-icon>
+          <span>Delete column</span>
+        </button>
+      </mat-menu>
+    }
+  </header>
+
+  <div class="column-body">
+    <p class="placeholder muted">No tasks yet</p>
+  </div>
+</section>

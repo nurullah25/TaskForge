@@ -1,0 +1,89 @@
+@if (store.notFound()) {
+  <app-empty-state
+    icon="view_kanban"
+    title="Board not found"
+    message="It may have been deleted, or you don't have access to this project."
+  >
+    <a mat-flat-button routerLink="/projects">Back to projects</a>
+  </app-empty-state>
+} @else if (store.board(); as board) {
+  <header class="board-header">
+    <div class="titles">
+      <a class="breadcrumb muted" [routerLink]="['/projects', board.projectId]">
+        <span class="key-badge">{{ board.projectKey }}</span>
+        {{ board.projectName }}
+      </a>
+
+      <div class="board-title">
+        <h1>{{ board.name }}</h1>
+        @if (store.projectBoards().length > 1) {
+          <button mat-icon-button [matMenuTriggerFor]="boardMenu" aria-label="Switch board">
+            <mat-icon>unfold_more</mat-icon>
+          </button>
+          <mat-menu #boardMenu="matMenu">
+            @for (other of store.projectBoards(); track other.id) {
+              <a mat-menu-item [routerLink]="['/projects', board.projectId, 'boards', other.id]">
+                <mat-icon>{{ other.id === board.id ? 'check' : '' }}</mat-icon>
+                <span>{{ other.name }}</span>
+              </a>
+            }
+          </mat-menu>
+        }
+      </div>
+    </div>
+
+    @if (store.canManage()) {
+      <div class="actions">
+        <button mat-stroked-button (click)="addColumn()">
+          <mat-icon>add</mat-icon>
+          Add column
+        </button>
+        <button mat-icon-button [matMenuTriggerFor]="settingsMenu" aria-label="Board options">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #settingsMenu="matMenu" xPosition="before">
+          <button mat-menu-item (click)="renameBoard()">
+            <mat-icon>edit</mat-icon>
+            <span>Rename board</span>
+          </button>
+          <button mat-menu-item (click)="createBoard()">
+            <mat-icon>add_box</mat-icon>
+            <span>New board</span>
+          </button>
+          <button mat-menu-item (click)="deleteBoard()">
+            <mat-icon>delete</mat-icon>
+            <span>Delete board</span>
+          </button>
+        </mat-menu>
+      </div>
+    }
+  </header>
+
+  @if (store.loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <div
+    class="columns"
+    cdkDropList
+    cdkDropListOrientation="horizontal"
+    [cdkDropListData]="store.columns()"
+    (cdkDropListDropped)="dropColumn($event)"
+  >
+    @for (column of store.columns(); track column.id) {
+      <app-board-column
+        [column]="column"
+        [canManage]="store.canManage()"
+        (edit)="editColumn($event)"
+        (remove)="deleteColumn($event)"
+      />
+    }
+
+    @if (store.canManage()) {
+      <button class="add-column" type="button" (click)="addColumn()">
+        <mat-icon>add</mat-icon>
+        Add column
+      </button>
+    }
+  </div>
+}

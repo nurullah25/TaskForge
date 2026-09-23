@@ -1,0 +1,83 @@
+.column {
+  display: flex;
+  flex-direction: column;
+  width: 288px;
+  max-height: 100%;
+  border: 1px solid var(--tf-border);
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container-low, #f0f1f4);
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px 12px 14px;
+
+  &.draggable {
+    cursor: grab;
+  }
+}
+
+.column-name {
+  margin: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.count {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--mat-sys-surface);
+  color: var(--tf-muted);
+  font-size: 12px;
+}
+
+.menu-button {
+  margin-left: auto;
+}
+
+.category-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.todo {
+    background: #94a3b8;
+  }
+
+  &.inprogress {
+    background: #2563eb;
+  }
+
+  &.done {
+    background: #16a34a;
+  }
+}
+
+.column-body {
+  flex: 1;
+  min-height: 120px;
+  overflow-y: auto;
+  padding: 0 10px 12px;
+}
+
+.placeholder {
+  margin: 16px 0;
+  font-size: 13px;
+  text-align: center;
+}
+
+// The dragged column leaves a dashed outline behind in its old spot.
+.column.cdk-drag-placeholder {
+  border-style: dashed;
+  background: transparent;
+
+  > * {
+    visibility: hidden;
+  }
+}
