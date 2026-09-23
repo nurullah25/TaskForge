@@ -102,6 +102,7 @@ public class SearchAndDashboardTests(TaskForgeApiFactory factory)
         Assert.Equal(1, dashboard.OverdueTaskCount);
         Assert.Equal(2, dashboard.MyOpenTaskCount);
         Assert.Equal(["Overdue work", "Open work"], dashboard.MyTasks.Select(t => t.Title));
+        Assert.All(dashboard.MyTasks, t => Assert.Equal("WEB", t.ProjectKey));
         Assert.Equal(2, dashboard.OpenByCategory.Single(c => c.Name == "ToDo").Count);
         Assert.Equal(["High", "Medium"], dashboard.OpenByPriority.Select(p => p.Name));
     }

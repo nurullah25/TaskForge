@@ -31,6 +31,7 @@ public class TaskSearchQuery : PageQuery
 public record TaskListItemDto(
     int Id,
     int Number,
+    string ProjectKey,
     string Title,
     TaskPriority Priority,
     DateOnly? DueDate,
@@ -110,6 +111,7 @@ public class TaskSearchService(AppDbContext db, AccessService access)
         t => new TaskListItemDto(
             t.Id,
             t.Number,
+            t.Project.Key,
             t.Title,
             t.Priority,
             t.DueDate,

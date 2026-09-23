@@ -111,8 +111,8 @@ public static class DemoDataSeeder
 
         var loginPage = AddTask(portal, todo, "Build login page", TaskPriority.High, sarah, priya, 5, frontend);
         loginPage.Description = "Email and password form with validation, \"remember me\" and a link to password reset.";
-        AddTask(portal, todo, "Create reports", TaskPriority.Medium, sarah, null, 14, backend);
-        AddTask(portal, todo, "Add password reset email", TaskPriority.Low, daniel, daniel, null, backend);
+        AddTask(portal, todo, "Create reports", TaskPriority.Medium, sarah, sarah, 14, backend);
+        AddTask(portal, todo, "Add password reset email", TaskPriority.Low, daniel, sarah, 2, backend);
         var payments = AddTask(portal, inProgress, "Payment integration", TaskPriority.Urgent, sarah, daniel, -2, backend);
         payments.Description = "Card payments through the payment provider's hosted checkout. Needs webhook handling for refunds.";
         AddTask(portal, inProgress, "Order history page", TaskPriority.Medium, daniel, priya, 3, frontend);
