@@ -1,51 +1,41 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../core/auth/auth.service';
+import { WorkspaceService } from '../../core/workspace/workspace.service';
+import { OrganizationCreateDialog } from '../../organizations/organization-create-dialog/organization-create-dialog';
+import { EmptyState } from '../../shared/components/empty-state/empty-state';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 
 // Placeholder until the dashboard statistics are built.
 @Component({
   selector: 'app-dashboard-page',
-  imports: [DatePipe, MatCardModule, MatIconModule, PageHeader],
+  imports: [DatePipe, MatButtonModule, PageHeader, EmptyState],
   template: `
     <app-page-header [title]="greeting()" [subtitle]="(today | date: 'EEEE, MMMM d') ?? ''" />
 
-    <mat-card appearance="outlined" class="empty">
-      <mat-icon>insights</mat-icon>
-      <h2>Your overview will show up here</h2>
-      <p class="muted">Projects, open tasks and deadlines will be summarised on this page.</p>
-    </mat-card>
-  `,
-  styles: `
-    .empty {
-      align-items: center;
-      padding: 48px 24px;
-      text-align: center;
-      background: var(--mat-sys-surface);
-    }
-
-    mat-icon {
-      font-size: 40px;
-      width: 40px;
-      height: 40px;
-      color: var(--mat-sys-primary);
-    }
-
-    h2 {
-      margin: 12px 0 4px;
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    p {
-      margin: 0;
+    @if (workspace.organizationsLoaded() && workspace.organizations().length === 0) {
+      <app-empty-state
+        icon="rocket_launch"
+        title="Welcome to TaskForge"
+        message="Create an organization for your team, then add projects and invite colleagues."
+      >
+        <button mat-flat-button (click)="createOrganization()">Create organization</button>
+      </app-empty-state>
+    } @else {
+      <app-empty-state
+        icon="insights"
+        title="Your overview will show up here"
+        message="Projects, open tasks and deadlines will be summarised on this page."
+      />
     }
   `,
 })
 export class DashboardPage {
   private readonly auth = inject(AuthService);
+  private readonly dialog = inject(MatDialog);
+  protected readonly workspace = inject(WorkspaceService);
 
   protected readonly today = new Date();
 
@@ -55,4 +45,8 @@ export class DashboardPage {
     const firstName = this.auth.currentUser()?.fullName.split(' ')[0] ?? '';
     return `Good ${partOfDay}, ${firstName}`;
   });
+
+  protected createOrganization(): void {
+    OrganizationCreateDialog.open(this.dialog).subscribe();
+  }
 }

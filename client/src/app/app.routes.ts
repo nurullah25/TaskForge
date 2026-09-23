@@ -26,6 +26,33 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./dashboard/dashboard-page/dashboard-page').then((m) => m.DashboardPage),
       },
+      {
+        path: 'projects',
+        title: 'Projects · TaskForge',
+        loadComponent: () =>
+          import('./projects/project-list-page/project-list-page').then((m) => m.ProjectListPage),
+      },
+      {
+        path: 'projects/:projectId',
+        title: 'Project · TaskForge',
+        loadComponent: () => import('./projects/project-page/project-page').then((m) => m.ProjectPage),
+      },
+      {
+        path: 'projects/:projectId/settings',
+        title: 'Project settings · TaskForge',
+        loadComponent: () =>
+          import('./projects/project-settings-page/project-settings-page').then(
+            (m) => m.ProjectSettingsPage,
+          ),
+      },
+      {
+        path: 'organizations/:organizationId/settings',
+        title: 'Organization settings · TaskForge',
+        loadComponent: () =>
+          import('./organizations/organization-settings-page/organization-settings-page').then(
+            (m) => m.OrganizationSettingsPage,
+          ),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],
   },

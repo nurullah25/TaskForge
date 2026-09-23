@@ -1,7 +1,14 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .brand {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
   height: 64px;
   padding: 0 20px;
   border-bottom: 1px solid var(--tf-border);
@@ -30,6 +37,88 @@
   letter-spacing: -0.2px;
 }
 
+.switcher-wrapper {
+  padding: 12px 12px 0;
+}
+
+.switcher {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--tf-border);
+  border-radius: 10px;
+  background: var(--mat-sys-surface);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--tf-page-background);
+  }
+
+  mat-icon {
+    margin-left: auto;
+    color: var(--tf-muted);
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.org-initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+  font-weight: 600;
+}
+
+.org-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .nav {
-  padding: 12px 8px;
+  padding: 12px 8px 4px;
+}
+
+.section-label {
+  margin: 12px 0 0;
+  padding: 0 24px;
+  color: var(--tf-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.projects {
+  overflow-y: auto;
+  padding-top: 4px;
+}
+
+.project-key {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  min-width: 32px;
+  height: 22px !important;
+  padding: 0 4px;
+  border-radius: 5px;
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+  font-size: 10px;
+  font-weight: 700;
 }

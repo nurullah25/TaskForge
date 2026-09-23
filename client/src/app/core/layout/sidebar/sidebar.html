@@ -5,6 +5,38 @@
   <span class="name">TaskForge</span>
 </div>
 
+@let current = workspace.currentOrganization();
+
+<div class="switcher-wrapper">
+  <button class="switcher" [matMenuTriggerFor]="organizationMenu" aria-label="Switch organization">
+    <span class="org-initial">{{ current ? current.name[0].toUpperCase() : '+' }}</span>
+    <span class="org-name">{{ current?.name ?? 'No organization' }}</span>
+    <mat-icon>unfold_more</mat-icon>
+  </button>
+</div>
+
+<mat-menu #organizationMenu="matMenu" class="organization-menu">
+  @for (organization of workspace.organizations(); track organization.id) {
+    <button mat-menu-item (click)="selectOrganization(organization.id)">
+      <mat-icon>{{ organization.id === current?.id ? 'check' : '' }}</mat-icon>
+      <span>{{ organization.name }}</span>
+    </button>
+  }
+  @if (workspace.organizations().length) {
+    <mat-divider />
+  }
+  @if (current) {
+    <a mat-menu-item [routerLink]="['/organizations', current.id, 'settings']" (click)="linkClicked.emit()">
+      <mat-icon>settings</mat-icon>
+      <span>Organization settings</span>
+    </a>
+  }
+  <button mat-menu-item (click)="createOrganization()">
+    <mat-icon>add</mat-icon>
+    <span>Create organization</span>
+  </button>
+</mat-menu>
+
 <mat-nav-list class="nav">
   @for (item of navItems; track item.route) {
     <a
@@ -12,6 +44,7 @@
       [routerLink]="item.route"
       routerLinkActive
       #link="routerLinkActive"
+      [routerLinkActiveOptions]="{ exact: true }"
       [activated]="link.isActive"
       (click)="linkClicked.emit()"
     >
@@ -20,3 +53,22 @@
     </a>
   }
 </mat-nav-list>
+
+@if (activeProjects().length) {
+  <h3 class="section-label">Projects</h3>
+  <mat-nav-list class="nav projects" aria-label="Projects">
+    @for (project of activeProjects(); track project.id) {
+      <a
+        mat-list-item
+        [routerLink]="['/projects', project.id]"
+        routerLinkActive
+        #projectLink="routerLinkActive"
+        [activated]="projectLink.isActive"
+        (click)="linkClicked.emit()"
+      >
+        <span matListItemIcon class="project-key">{{ project.key }}</span>
+        <span matListItemTitle>{{ project.name }}</span>
+      </a>
+    }
+  </mat-nav-list>
+}
