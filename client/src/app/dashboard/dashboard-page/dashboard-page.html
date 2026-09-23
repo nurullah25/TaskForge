@@ -1,5 +1,9 @@
 <app-page-header [title]="greeting()" [subtitle]="workspace.currentOrganization()?.name || ''" />
 
+@if (!summary() && workspace.organizations().length) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
 @if (workspace.organizationsLoaded() && workspace.organizations().length === 0) {
   <app-empty-state
     icon="rocket_launch"

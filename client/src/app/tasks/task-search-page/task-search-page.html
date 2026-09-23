@@ -67,6 +67,10 @@
   }
 </form>
 
+@if (loading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
 @if (results().length) {
   <p class="count muted">{{ total() }} {{ total() === 1 ? 'task' : 'tasks' }}</p>
 

@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
 import { catchError, EMPTY, of, switchMap } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
@@ -42,6 +43,7 @@ const CATEGORY_LABELS: Record<string, string> = {
     MatCardModule,
     MatButtonModule,
     MatIconModule,
+    MatProgressBarModule,
     PageHeader,
     EmptyState,
     TaskListRow,
