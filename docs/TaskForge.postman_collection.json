@@ -1,0 +1,264 @@
+{
+  "info": {
+    "name": "TaskForge API",
+    "description": "Run \"Sign in\" first: it stores the access token in a collection variable that every other request uses.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5080" },
+    { "key": "accessToken", "value": "" },
+    { "key": "organizationId", "value": "1" },
+    { "key": "projectId", "value": "1" },
+    { "key": "boardId", "value": "1" },
+    { "key": "columnId", "value": "1" },
+    { "key": "taskId", "value": "1" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"new.user@example.com\",\n  \"fullName\": \"New User\",\n  \"password\": \"Password123!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Sign in",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', body.accessToken);",
+                  "pm.test('signed in', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sarah@example.com\",\n  \"password\": \"Demo@1234\"\n}"
+            }
+          }
+        },
+        { "name": "Current user", "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/me" } },
+        {
+          "name": "Refresh (uses the cookie)",
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/refresh" }
+        },
+        { "name": "Sign out", "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/logout" } }
+      ]
+    },
+    {
+      "name": "Organizations",
+      "item": [
+        { "name": "My organizations", "request": { "method": "GET", "url": "{{baseUrl}}/api/organizations" } },
+        {
+          "name": "Create organization",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/organizations",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Acme Inc.\"\n}" }
+          }
+        },
+        {
+          "name": "Members",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/organizations/{{organizationId}}/members" }
+        },
+        {
+          "name": "Add member",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/organizations/{{organizationId}}/members",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"daniel@example.com\",\n  \"role\": \"Admin\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Projects in organization",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/organizations/{{organizationId}}/projects" }
+        },
+        {
+          "name": "Create project",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/organizations/{{organizationId}}/projects",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Customer Portal\",\n  \"key\": \"CP\",\n  \"description\": \"Self-service portal\"\n}"
+            }
+          }
+        },
+        { "name": "Project", "request": { "method": "GET", "url": "{{baseUrl}}/api/projects/{{projectId}}" } },
+        {
+          "name": "Project members",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/projects/{{projectId}}/members" }
+        },
+        {
+          "name": "Labels",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/projects/{{projectId}}/labels" }
+        },
+        {
+          "name": "Project activity",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/projects/{{projectId}}/activity?page=1&pageSize=20" }
+        }
+      ]
+    },
+    {
+      "name": "Boards",
+      "item": [
+        { "name": "Board with cards", "request": { "method": "GET", "url": "{{baseUrl}}/api/boards/{{boardId}}" } },
+        {
+          "name": "Boards of project",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/projects/{{projectId}}/boards" }
+        },
+        {
+          "name": "Add column",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/boards/{{boardId}}/columns",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Blocked\",\n  \"category\": \"InProgress\"\n}" }
+          }
+        },
+        {
+          "name": "Reorder columns",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/boards/{{boardId}}/columns/order",
+            "body": { "mode": "raw", "raw": "{\n  \"columnIds\": [2, 1, 3, 4]\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "Search tasks",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/projects/{{projectId}}/tasks?text=&priority=&category=&overdue=false&sort=DueDate&page=1&pageSize=20"
+          }
+        },
+        { "name": "Task", "request": { "method": "GET", "url": "{{baseUrl}}/api/tasks/{{taskId}}" } },
+        {
+          "name": "Create task",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/tasks",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"columnId\": {{columnId}},\n  \"title\": \"Write the release notes\",\n  \"description\": null,\n  \"priority\": \"High\",\n  \"assigneeId\": null,\n  \"dueDate\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Update task (row version checked)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Write the release notes\",\n  \"description\": \"Cover the new board filters.\",\n  \"priority\": \"Medium\",\n  \"assigneeId\": null,\n  \"dueDate\": null,\n  \"rowVersion\": \"paste the rowVersion from GET /api/tasks/{id}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Move task",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}/move",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"columnId\": 2,\n  \"aboveTaskId\": null,\n  \"belowTaskId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Set labels",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}/labels",
+            "body": { "mode": "raw", "raw": "{\n  \"labelIds\": [1, 2]\n}" }
+          }
+        },
+        {
+          "name": "Task history",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/tasks/{{taskId}}/activity" }
+        }
+      ]
+    },
+    {
+      "name": "Comments and files",
+      "item": [
+        {
+          "name": "Comments",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/tasks/{{taskId}}/comments?page=1&pageSize=20" }
+        },
+        {
+          "name": "Add comment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}/comments",
+            "body": { "mode": "raw", "raw": "{\n  \"body\": \"Looks good to me.\"\n}" }
+          }
+        },
+        {
+          "name": "Attachments",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/tasks/{{taskId}}/attachments" }
+        },
+        {
+          "name": "Upload attachment",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}/attachments",
+            "body": { "mode": "formdata", "formdata": [{ "key": "file", "type": "file", "src": [] }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications and dashboard",
+      "item": [
+        { "name": "My notifications", "request": { "method": "GET", "url": "{{baseUrl}}/api/notifications?page=1&pageSize=20" } },
+        { "name": "Unread count", "request": { "method": "GET", "url": "{{baseUrl}}/api/notifications/unread-count" } },
+        { "name": "Mark all read", "request": { "method": "POST", "url": "{{baseUrl}}/api/notifications/read-all" } },
+        {
+          "name": "Dashboard",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/dashboard?organizationId={{organizationId}}" }
+        }
+      ]
+    }
+  ]
+}
