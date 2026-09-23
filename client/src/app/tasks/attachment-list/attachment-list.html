@@ -1,0 +1,42 @@
+@if (errorMessage(); as message) {
+  <div class="form-error" role="alert"><mat-icon>error</mat-icon>{{ message }}</div>
+}
+
+@if (canUpload()) {
+  <input #fileInput type="file" hidden (change)="upload($event)" />
+  <button mat-stroked-button [disabled]="uploading()" (click)="chooseFile()">
+    <mat-icon>upload_file</mat-icon>
+    {{ uploading() ? 'Uploading…' : 'Upload file' }}
+  </button>
+  <p class="muted hint">Up to 10 MB. Images, PDFs, documents and archives.</p>
+}
+
+<ul class="files">
+  @for (attachment of attachments(); track attachment.id) {
+    <li>
+      <mat-icon>description</mat-icon>
+
+      <div class="details">
+        <button class="name" type="button" (click)="download(attachment)">
+          {{ attachment.fileName }}
+        </button>
+        <span class="muted meta">
+          {{ formatSize(attachment.sizeBytes) }} · {{ attachment.uploadedBy.fullName }} ·
+          {{ attachment.createdAt | relativeTime }}
+        </span>
+      </div>
+
+      @if (attachment.canDelete) {
+        <button
+          mat-icon-button
+          [attr.aria-label]="'Delete ' + attachment.fileName"
+          (click)="remove(attachment)"
+        >
+          <mat-icon>delete</mat-icon>
+        </button>
+      }
+    </li>
+  } @empty {
+    <li class="muted empty">No files attached.</li>
+  }
+</ul>

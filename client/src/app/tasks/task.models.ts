@@ -1,3 +1,4 @@
+import { Label } from '../labels/label.models';
 import { ProjectRole } from '../projects/project.models';
 
 export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
@@ -19,6 +20,7 @@ export interface TaskCard {
   columnId: number;
   position: number;
   assignee: TaskMember | null;
+  labels: Label[];
   hasDescription: boolean;
   commentCount: number;
 }
@@ -41,6 +43,7 @@ export interface TaskDetails {
   createdAt: string;
   updatedAt: string;
   completedAt: string | null;
+  labels: Label[];
   myRole: ProjectRole;
   rowVersion: string;
 }

@@ -1,0 +1,60 @@
+@if (comments().length < total()) {
+  <button mat-button class="load-more" (click)="loadMore()">
+    Show earlier comments ({{ total() - comments().length }})
+  </button>
+}
+
+<ul class="comments">
+  @for (comment of comments(); track comment.id) {
+    <li class="comment">
+      <app-user-avatar [name]="comment.author.fullName" [size]="32" />
+
+      <div class="body">
+        <div class="byline">
+          <strong>{{ comment.author.fullName }}</strong>
+          <span class="muted">{{ comment.createdAt | relativeTime }}</span>
+          @if (comment.updatedAt) {
+            <span class="muted">· edited</span>
+          }
+
+          <span class="actions">
+            @if (comment.canEdit && editingId() !== comment.id) {
+              <button mat-icon-button aria-label="Edit comment" (click)="startEditing(comment)">
+                <mat-icon>edit</mat-icon>
+              </button>
+            }
+            @if (comment.canDelete) {
+              <button mat-icon-button aria-label="Delete comment" (click)="remove(comment)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            }
+          </span>
+        </div>
+
+        @if (editingId() === comment.id) {
+          <mat-form-field appearance="outline" class="full-width">
+            <textarea matInput [formControl]="editedComment" rows="3"></textarea>
+          </mat-form-field>
+          <div class="edit-actions">
+            <button mat-button (click)="editingId.set(null)">Cancel</button>
+            <button mat-flat-button (click)="saveEdit(comment)">Save</button>
+          </div>
+        } @else {
+          <p class="text">{{ comment.body }}</p>
+        }
+      </div>
+    </li>
+  } @empty {
+    @if (!loading()) {
+      <li class="muted empty">No comments yet.</li>
+    }
+  }
+</ul>
+
+<form class="new-comment" [formGroup]="newCommentForm" (ngSubmit)="add()">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Add a comment</mat-label>
+    <textarea matInput formControlName="body" rows="3"></textarea>
+  </mat-form-field>
+  <button mat-flat-button type="submit" [disabled]="newCommentForm.invalid">Comment</button>
+</form>

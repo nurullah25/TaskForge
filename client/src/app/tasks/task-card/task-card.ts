@@ -2,15 +2,24 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { UserAvatar } from '../../shared/components/user-avatar/user-avatar';
+import { LabelChip } from '../../labels/label-chip/label-chip';
 import { isOverdue, TaskCard, taskKey } from '../task.models';
 import { PriorityChip } from '../priority-chip/priority-chip';
 
 @Component({
   selector: 'app-task-card',
-  imports: [DatePipe, MatIconModule, UserAvatar, PriorityChip],
+  imports: [DatePipe, MatIconModule, UserAvatar, PriorityChip, LabelChip],
   template: `
     @let card = task();
     <article class="card">
+      @if (card.labels.length) {
+        <div class="labels">
+          @for (label of card.labels; track label.id) {
+            <app-label-chip [label]="label" />
+          }
+        </div>
+      }
+
       <p class="title">{{ card.title }}</p>
 
       <div class="meta">

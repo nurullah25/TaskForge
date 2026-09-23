@@ -11,22 +11,32 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTabsModule } from '@angular/material/tabs';
 import { catchError, EMPTY, filter, finalize, Observable, switchMap } from 'rxjs';
-import { getErrorMessage } from '../../core/http/api-error';
+import { getErrorMessage, ignoreHandledError } from '../../core/http/api-error';
+import { Label } from '../../labels/label.models';
+import { LabelService } from '../../labels/label.service';
+import { LabelPicker } from '../../labels/label-picker/label-picker';
 import { confirmAction } from '../../shared/components/confirm-dialog/confirm-dialog';
 import { UserAvatar } from '../../shared/components/user-avatar/user-avatar';
+import { ActivityEntry, ActivityService } from '../activity.service';
 import { TaskDetails, TaskMember, taskKey } from '../task.models';
 import { TaskService } from '../task.service';
 import { createTaskForm, toDateOnly } from '../task-form';
+import { ActivityList } from '../activity-list/activity-list';
+import { AttachmentList } from '../attachment-list/attachment-list';
+import { CommentList } from '../comment-list/comment-list';
 import { TaskFields } from '../task-fields/task-fields';
 
 export interface TaskPanelData {
   taskId: number;
   members: TaskMember[];
+  labels: Label[];
 }
 
 // What happened to the task while the panel was open, so the board can update itself.
-export type TaskPanelResult = { changed: TaskDetails } | { deleted: number } | undefined;
+export type TaskPanelResult =
+  { changed: TaskDetails; commentCount?: number } | { deleted: number } | undefined;
 
 @Component({
   selector: 'app-task-detail-panel',
@@ -38,23 +48,35 @@ export type TaskPanelResult = { changed: TaskDetails } | { deleted: number } | u
     MatIconModule,
     MatMenuModule,
     MatProgressBarModule,
+    MatTabsModule,
     UserAvatar,
     TaskFields,
+    LabelPicker,
+    CommentList,
+    ActivityList,
+    AttachmentList,
   ],
   templateUrl: './task-detail-panel.html',
   styleUrl: './task-detail-panel.scss',
 })
 export class TaskDetailPanel {
   private readonly api = inject(TaskService);
+  private readonly labelApi = inject(LabelService);
+  private readonly activityApi = inject(ActivityService);
   private readonly dialog = inject(MatDialog);
   private readonly dialogRef = inject(MatDialogRef<TaskDetailPanel, TaskPanelResult>);
   private readonly data = inject<TaskPanelData>(MAT_DIALOG_DATA);
 
   protected readonly members = this.data.members;
+  protected readonly projectLabels = this.data.labels;
+
   protected readonly task = signal<TaskDetails | null>(null);
+  protected readonly history = signal<ActivityEntry[]>([]);
   protected readonly saving = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly form = createTaskForm();
+
+  private commentCount: number | undefined;
 
   protected readonly key = computed(() => {
     const task = this.task();
@@ -68,7 +90,7 @@ export class TaskDetailPanel {
         data,
         panelClass: 'task-panel',
         position: { right: '0', top: '0' },
-        width: '520px',
+        width: '560px',
         maxWidth: '100vw',
         height: '100vh',
         autoFocus: false,
@@ -95,6 +117,8 @@ export class TaskDetailPanel {
         }),
       )
       .subscribe((task) => this.setTask(task));
+
+    this.loadHistory();
   }
 
   protected save(): void {
@@ -120,14 +144,32 @@ export class TaskDetailPanel {
       })
       .pipe(finalize(() => this.saving.set(false)))
       .subscribe({
-        next: (updated) => this.setTask(updated),
+        next: (updated) => {
+          this.setTask(updated);
+          this.loadHistory();
+        },
         error: (error) => this.errorMessage.set(getErrorMessage(error)),
       });
+  }
+
+  protected setLabels(labelIds: number[]): void {
+    const task = this.task()!;
+
+    this.labelApi
+      .setTaskLabels(task.id, labelIds)
+      .pipe(ignoreHandledError())
+      .subscribe((labels) => this.task.set({ ...task, labels }));
   }
 
   protected reload(): void {
     this.errorMessage.set(null);
     this.api.get(this.data.taskId).subscribe((task) => this.setTask(task));
+    this.loadHistory();
+  }
+
+  protected onCommentCountChanged(count: number): void {
+    this.commentCount = count;
+    this.loadHistory();
   }
 
   protected deleteTask(): void {
@@ -148,7 +190,14 @@ export class TaskDetailPanel {
 
   protected close(): void {
     const task = this.task();
-    this.dialogRef.close(task ? { changed: task } : undefined);
+    this.dialogRef.close(task ? { changed: task, commentCount: this.commentCount } : undefined);
+  }
+
+  private loadHistory(): void {
+    this.activityApi
+      .forTask(this.data.taskId)
+      .pipe(ignoreHandledError())
+      .subscribe((entries) => this.history.set(entries));
   }
 
   private setTask(task: TaskDetails): void {

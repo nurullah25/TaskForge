@@ -23,41 +23,73 @@
     </div>
   </header>
 
-  <div class="panel-body">
-    @if (errorMessage(); as message) {
-      <div class="form-error" role="alert">
-        <mat-icon>error</mat-icon>
-        <span>{{ message }}</span>
-        <button mat-button (click)="reload()">Reload</button>
-      </div>
-    }
+  <mat-tab-group class="panel-body" animationDuration="0ms">
+    <mat-tab label="Details">
+      <div class="tab-content">
+        @if (errorMessage(); as message) {
+          <div class="form-error" role="alert">
+            <mat-icon>error</mat-icon>
+            <span>{{ message }}</span>
+            <button mat-button (click)="reload()">Reload</button>
+          </div>
+        }
 
-    <app-task-fields [form]="form" [members]="members" />
+        <app-task-fields [form]="form" [members]="members" />
 
-    <dl class="facts">
-      <div>
-        <dt class="muted">Reporter</dt>
-        <dd>
-          <app-user-avatar [name]="task.reporter.fullName" [size]="22" />
-          {{ task.reporter.fullName }}
-        </dd>
-      </div>
-      <div>
-        <dt class="muted">Created</dt>
-        <dd>{{ task.createdAt | date: 'medium' }}</dd>
-      </div>
-      <div>
-        <dt class="muted">Last updated</dt>
-        <dd>{{ task.updatedAt | date: 'medium' }}</dd>
-      </div>
-      @if (task.completedAt) {
-        <div>
-          <dt class="muted">Completed</dt>
-          <dd>{{ task.completedAt | date: 'medium' }}</dd>
+        <div class="label-row">
+          <span class="muted field-label">Labels</span>
+          <app-label-picker
+            [labels]="task.labels"
+            [available]="projectLabels"
+            [canEdit]="canEdit()"
+            (changed)="setLabels($event)"
+          />
         </div>
-      }
-    </dl>
-  </div>
+
+        <dl class="facts">
+          <div>
+            <dt class="muted">Reporter</dt>
+            <dd>
+              <app-user-avatar [name]="task.reporter.fullName" [size]="22" />
+              {{ task.reporter.fullName }}
+            </dd>
+          </div>
+          <div>
+            <dt class="muted">Created</dt>
+            <dd>{{ task.createdAt | date: 'medium' }}</dd>
+          </div>
+          <div>
+            <dt class="muted">Last updated</dt>
+            <dd>{{ task.updatedAt | date: 'medium' }}</dd>
+          </div>
+          @if (task.completedAt) {
+            <div>
+              <dt class="muted">Completed</dt>
+              <dd>{{ task.completedAt | date: 'medium' }}</dd>
+            </div>
+          }
+        </dl>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Comments">
+      <div class="tab-content">
+        <app-comment-list [taskId]="task.id" (countChanged)="onCommentCountChanged($event)" />
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Files">
+      <div class="tab-content">
+        <app-attachment-list [taskId]="task.id" [canUpload]="canEdit()" />
+      </div>
+    </mat-tab>
+
+    <mat-tab label="History">
+      <div class="tab-content">
+        <app-activity-list [entries]="history()" />
+      </div>
+    </mat-tab>
+  </mat-tab-group>
 
   @if (canEdit()) {
     <footer class="panel-footer">
