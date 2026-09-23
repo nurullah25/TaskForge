@@ -40,6 +40,14 @@ Every project starts with a board containing four columns: To do, In progress, T
 
 Each column has a type (`ToDo`, `InProgress`, `Done`) separate from its name, so teams can rename columns freely while reports still know what counts as finished. Reordering sends the complete list of column ids rather than "moved column X to position 3", which keeps the result predictable when two people reorder at the same time. A column or board that still holds tasks can't be deleted, and a project always keeps at least one board.
 
+## Tasks and the kanban board
+
+Tasks get a project-scoped key such as `CP-12`, taken from a counter on the project that is protected by a concurrency token, so two tasks created at the same moment can't share a number.
+
+Cards are dragged within a column and between columns. Instead of an index, the client tells the API which cards the task was dropped **between**, and the server gives it the midpoint of their positions, so a move updates a single row and stays correct if someone else rearranged the column in the meantime. When repeated drops in the same spot leave no room between two neighbours, the column is spread out evenly again.
+
+Editing a task sends back the row version it was loaded with. If someone else saved first, the API answers `409` and the panel offers to reload their version instead of silently overwriting it. Moving a card into a `Done` column marks the task completed; moving it out reopens it. Every change is written to the activity history.
+
 ## Roles and permissions
 
 Work is organized as organization → projects → boards → tasks. Access is checked on the server for every request, using roles stored in the database rather than in the token, so a role change takes effect immediately.
