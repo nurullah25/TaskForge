@@ -1,0 +1,60 @@
+.add-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+
+  mat-form-field {
+    width: 220px;
+  }
+}
+
+.colors {
+  display: flex;
+  gap: 6px;
+}
+
+.swatch {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+
+  &.selected {
+    border-color: var(--mat-sys-on-surface);
+  }
+}
+
+.colors.small .swatch {
+  width: 16px;
+  height: 16px;
+}
+
+.labels {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--tf-border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  app-label-chip {
+    min-width: 120px;
+  }
+
+  button[mat-icon-button] {
+    margin-left: auto;
+  }
+}
