@@ -194,6 +194,7 @@ public class TaskService(AppDbContext db, CurrentUser currentUser, AccessService
                 t.Column.BoardId,
                 t.ColumnId,
                 t.Column.Name,
+                t.Position,
                 t.Title,
                 t.Description,
                 t.Priority,

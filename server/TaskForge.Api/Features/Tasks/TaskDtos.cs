@@ -25,6 +25,7 @@ public record TaskDetailsDto(
     int BoardId,
     int ColumnId,
     string ColumnName,
+    double Position,
     string Title,
     string? Description,
     TaskPriority Priority,
